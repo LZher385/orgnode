@@ -1,0 +1,22 @@
+@import '../../styles/variables';
+
+.body{
+  display: flex;
+  flex-flow: column;
+  height: 85vh;
+  text-align: center;
+  padding-top: 15%;
+}
+
+.logo{
+  color: $blue;
+}
+
+.list{
+  margin-top: 7%;
+}
+
+.listItems{
+  margin-top: 3%;
+  color: $purple;
+}
