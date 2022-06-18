@@ -1,7 +1,10 @@
-export interface INode {
+import { Document } from "mongoose";
+
+export default interface INode extends Document {
   title: string;
-  children: Node[];
-  content?: string;
-  scheduled?: Date;
-  deadline?: Date;
+  description?: string;
+  children: INode[];
+  scheduledDate?: Date;
+  deadlineDate?: Date;
+  isRoot: boolean;
 }

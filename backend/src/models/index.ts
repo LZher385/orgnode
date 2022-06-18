@@ -1,3 +1,3 @@
-import { List } from "./list";
+import Node from "./nodeModel";
 
-export { List };
+export { Node };
