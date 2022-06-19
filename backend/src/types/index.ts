@@ -1,1 +1,3 @@
-export * from "./node";
+import INode from "./node";
+
+export type { INode };

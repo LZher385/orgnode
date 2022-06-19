@@ -1,5 +1,6 @@
 import React from "react";
 import "./HomePage.scss";
+import { Link } from "react-router-dom";
 
 type Props = {};
 
@@ -21,7 +22,8 @@ $$ |  $$ |$$ |      $$ |  $$ |$$ |\\$$$ |$$ |  $$ |$$ |  $$ |$$   ____|
       </pre>
       <section className="mt-24">
         <a className="text-doom-purple mt-8 block">Agenda</a>
-        <a className="text-doom-purple mt-8 block">Lists</a>
+        <Link to="/lists"><h3 className="text-doom-purple mt-8 block">
+          Lists</h3></Link>
         <a className="text-doom-purple mt-8 block">About</a>
       </section>
     </div>
