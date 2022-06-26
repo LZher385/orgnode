@@ -1,5 +1,5 @@
 import nodesReducer from "./nodeSlice";
-import { editNode, listNodes, addNode, INode } from "./nodeSlice";
+import { editNodeTitle, listNodes, addNode, INode } from "./nodeSlice";
 
-export { nodesReducer, editNode, listNodes, addNode };
+export { nodesReducer, editNodeTitle, listNodes, addNode };
 export type { INode };

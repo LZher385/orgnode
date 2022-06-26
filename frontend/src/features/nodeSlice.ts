@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { nodesReducer } from ".";
 
 export interface INode {
   _id: string;
@@ -73,8 +74,15 @@ export const nodeSlice = createSlice({
   name: "node",
   initialState,
   reducers: {
-    editNode: (state, action: PayloadAction<string>) => {
-      return;
+    editNodeTitle: (
+      state,
+      action: PayloadAction<{ _id: string; title: string }>
+    ) => {
+      return state.value.forEach((node) => {
+        if (node._id === action.payload._id) {
+          node.title = action.payload.title;
+        }
+      });
     },
     listNodes: (state) => {
       return state;
@@ -85,6 +93,6 @@ export const nodeSlice = createSlice({
   },
 });
 
-export const { editNode, listNodes, addNode } = nodeSlice.actions;
+export const { editNodeTitle, listNodes, addNode } = nodeSlice.actions;
 
 export default nodeSlice.reducer;
