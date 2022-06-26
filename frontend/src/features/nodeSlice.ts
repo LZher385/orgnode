@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface INode {
+export interface INode {
   _id: string;
   title: string;
   description?: string;
@@ -37,8 +37,8 @@ const initialState: NodeState = {
       title: "Root Node 1",
       description: "This is root node 1",
       children: [dummyChild("3"), dummyChild("4")],
-      scheduledDate: undefined,
-      deadlineDate: undefined,
+      scheduledDate: new Date(),
+      deadlineDate: new Date(),
       isRoot: true,
       createdAt: undefined,
       updatedAt: undefined,
@@ -48,8 +48,8 @@ const initialState: NodeState = {
       title: "Root Node 2",
       description: "This is root node 2",
       children: undefined,
-      scheduledDate: undefined,
-      deadlineDate: undefined,
+      scheduledDate: new Date(),
+      deadlineDate: new Date(),
       isRoot: true,
       createdAt: undefined,
       updatedAt: undefined,
