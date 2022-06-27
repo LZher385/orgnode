@@ -1,3 +1,4 @@
+import { ConstructionOutlined } from "@mui/icons-material";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { nodesReducer } from ".";
 
@@ -74,25 +75,67 @@ export const nodeSlice = createSlice({
   name: "node",
   initialState,
   reducers: {
-    editNodeTitle: (
-      state,
-      action: PayloadAction<{ _id: string; title: string }>
-    ) => {
-      return state.value.forEach((node) => {
-        if (node._id === action.payload._id) {
-          node.title = action.payload.title;
-        }
-      });
-    },
     listNodes: (state) => {
       return state;
     },
     addNode: (state) => {
       state.value.push(dummyChild("8"));
     },
+    editListTitle: (
+      state,
+      action: PayloadAction<{ _id: string; title: string }>
+    ) => {
+      state.value.forEach((node) => {
+        if (node._id === action.payload._id) {
+          node.title = action.payload.title;
+        }
+      });
+    },
+    editListDescription: (
+      state,
+      action: PayloadAction<{ _id: string; desc: string }>
+    ) => {
+      state.value.forEach((node) => {
+        if (node._id === action.payload._id) {
+          node.description = action.payload.desc;
+        }
+      });
+    },
+    editListScheduledDate: (
+      state,
+      action: PayloadAction<{ _id: string; date: Date }>
+    ) => {
+      state.value.forEach((node) => {
+        if (node._id === action.payload._id) {
+          node.scheduledDate = action.payload.date;
+        }
+      });
+    },
+    editListDeadlineDate: (
+      state,
+      action: PayloadAction<{ _id: string; date: Date }>
+    ) => {
+      state.value.forEach((node) => {
+        if (node._id === action.payload._id) {
+          node.deadlineDate = action.payload.date;
+        }
+      });
+    },
+    deleteList: (state, action: PayloadAction<string>) => {
+      state.value = state.value.filter((list) => list._id !== action.payload);
+    },
+    refileList: () => {},
   },
 });
 
-export const { editNodeTitle, listNodes, addNode } = nodeSlice.actions;
+export const {
+  listNodes,
+  addNode,
+  editListTitle,
+  editListDescription,
+  editListScheduledDate,
+  editListDeadlineDate,
+  deleteList,
+} = nodeSlice.actions;
 
 export default nodeSlice.reducer;

@@ -5,12 +5,14 @@ import React, {
   useState,
 } from "react";
 import { Collapse } from "react-collapse";
+import { DayPicker } from "react-day-picker";
 import {
   Schedule,
   HourglassTop,
   DriveFileMove,
   ArrowDropDown,
   ArrowDropUp,
+  DeleteForever,
 } from "@mui/icons-material";
 import { INode } from "../../features";
 import logging from "../../config/logging";
@@ -31,17 +33,29 @@ interface props {
     titleInputRef: React.RefObject<HTMLTextAreaElement>,
     _id: string
   ) => KeyboardEventHandler<HTMLTextAreaElement>;
+  removeList: (_id: string) => void;
 }
 
 function ListItem(props: props) {
   const { _id, title, deadlineDate, scheduledDate, description } = props.node;
   const { isCollapsed, isSelected, isEditingTitle, isEditingDesc } = props;
-  const { toggleCollapse, titleKeydownGenerate, descKeydownGenerate } = props;
+  const {
+    toggleCollapse,
+    titleKeydownGenerate,
+    descKeydownGenerate,
+    removeList,
+  } = props;
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
-
   const [titleState, setTitleState] = useState<string>(title);
   const [descState, setDescState] = useState<string>(description ?? "");
+  const [descHeight, setDescHeight] = useState<number>(
+    descRef.current?.scrollHeight ?? 48
+  );
+  const [selectedScheDate, setSelectedScheDate] = useState<Date | undefined>(
+    scheduledDate
+  );
+  const [selectedDeadDate, setSelectedDeadDate] = useState<Date | undefined>();
 
   useEffect(() => {
     // logging.info("use effect " + title);
@@ -84,6 +98,9 @@ function ListItem(props: props) {
           <button>
             <DriveFileMove className="text-doom-green mx-1" />
           </button>
+          <button onClick={() => removeList(_id)}>
+            <DeleteForever className="text-doom-green mx -1" />
+          </button>
         </div>
       </div>
 
@@ -95,17 +112,29 @@ function ListItem(props: props) {
               DEADLINE: {deadlineDate?.toDateString()}
             </span>
           </div>
-          {/* <div>{description}</div> */}
           <textarea
             ref={descRef}
-            rows={5}
-            className="focus:outline-none resize-none w-full"
+            className={`focus:outline-none resize-none w-full`}
+            style={{ height: descHeight < 200 ? descHeight : 200 }}
             value={descState}
-            onChange={(e) => setDescState(e.target.value)}
+            onChange={(e) => {
+              setDescState(e.target.value);
+              setDescHeight(descRef.current?.scrollHeight!);
+            }}
             onKeyDown={descKeydownGenerate(descRef, _id)}
           />
         </Collapse>
       </div>
+
+      {/* {_id === "node1" && (
+        <div className="absolute">
+          <DayPicker
+            mode="single"
+            selected={selectedScheDate}
+            onSelect={setSelectedScheDate}
+          />
+        </div>
+      )} */}
     </div>
   );
 }

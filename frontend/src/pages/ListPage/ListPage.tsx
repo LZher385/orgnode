@@ -5,7 +5,15 @@ import { RootState } from "../../app/store";
 import { useHotkeys, Options } from "react-hotkeys-hook";
 import ListItem from "../../components/ListItem/ListItem";
 import logging from "../../config/logging";
-import { listNodes, addNode, editNodeTitle } from "../../features";
+import {
+  listNodes,
+  addNode,
+  editListTitle,
+  editListDescription,
+  editListScheduledDate,
+  editListDeadlineDate,
+  deleteList,
+} from "../../features";
 
 type Props = {};
 
@@ -18,17 +26,24 @@ enum EditStates {
 function ListPage(props: Props) {
   const dispatch = useDispatch();
   const nodes = useSelector((state: RootState) => state.nodes.value);
+  // change to state
+  const test: { [key: number]: string } = {};
+  nodes.forEach((node, idx) => {
+    test[idx] = node._id;
+  });
   const [itemsIsCollapsed, setItemsIsCollapsed] = useState<{
     [key: string]: boolean;
   }>({});
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const [selectedId, setSelectedId] = useState<string>("");
+  // const [selectedId, setSelectedId] = useState<string>(nodes[0]._id);
   const [editState, setEditState] = useState<EditStates>(EditStates.None);
+
+  const selectedId = test[selectedIndex];
 
   const hotkeyOptions: Options = {
     filter: (e) => nodes.length > 0,
     filterPreventDefault: false,
-    keyup: true,
+    keydown: true,
   };
 
   useHotkeys(
@@ -60,20 +75,31 @@ function ListPage(props: Props) {
   );
 
   useHotkeys(
-    "t",
+    "i",
     () => {
       setEditState(EditStates.Title);
     },
-    hotkeyOptions
+    { ...hotkeyOptions, keyup: true, keydown: false }
   );
 
   useHotkeys(
-    "d",
+    "shift + i",
     () => {
       setEditState(EditStates.Desc);
+      setItemsIsCollapsed({ ...itemsIsCollapsed, [selectedId]: true });
     },
-    hotkeyOptions
+    { ...hotkeyOptions, keyup: true, keydown: false }
   );
+
+  useHotkeys(
+    "Delete",
+    () => {
+      removeList(selectedId);
+    },
+    [selectedId]
+  );
+
+  useHotkeys("s", () => {});
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     console.log(`Key pressed: ${event.key}`);
@@ -94,23 +120,35 @@ function ListPage(props: Props) {
     };
   }, [handleKeyPress]);
 
-  function toggleCollapse(_id: string) {
+  const toggleCollapse = (_id: string) => {
     setItemsIsCollapsed({ ...itemsIsCollapsed, [_id]: !itemsIsCollapsed[_id] });
-  }
+  };
 
-  function saveTitle(_id: string, title: string) {
-    dispatch(editNodeTitle({ _id, title }));
-  }
+  const saveTitle = (_id: string, title: string) => {
+    dispatch(editListTitle({ _id, title }));
+  };
+
+  const removeList = (_id: string) => {
+    dispatch(deleteList(_id));
+  };
+
+  const scheduleList = (_id: string, date: Date) => {
+    dispatch(editListScheduledDate({ _id, date }));
+  };
+
+  const deadlineList = (_id: string, date: Date) => {
+    dispatch(editListDeadlineDate({ _id, date }));
+  };
 
   const titleKeydownGenerate = (
     titleInputRef: React.RefObject<HTMLInputElement>,
     _id: string
   ): KeyboardEventHandler<HTMLInputElement> => {
     return (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Escape") {
-        titleInputRef.current?.blur();
-      }
-      if (e.key === "Enter") {
+      // if (e.key === "Escape") {
+      // titleInputRef.current?.blur();
+      // }
+      if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
         saveTitle(_id, titleInputRef!.current!.value);
         titleInputRef.current?.blur();
       }
@@ -123,10 +161,10 @@ function ListPage(props: Props) {
     _id: string
   ): KeyboardEventHandler<HTMLTextAreaElement> => {
     return (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Escape") {
-        descRef.current?.blur();
-      }
-      if (e.key === "Enter") {
+      // if (e.key === "Escape") {
+      // descRef.current?.blur();
+      // }
+      if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
         saveTitle(_id, descRef!.current!.value);
         descRef.current?.blur();
       }
@@ -141,29 +179,28 @@ function ListPage(props: Props) {
       </header>
       <div className="mx-5">
         {nodes.map(function (node, index) {
-          if (selectedIndex === index && selectedId !== node._id) {
-            setSelectedId(node._id);
-          }
+          const isSelected = selectedId === node._id;
+          // if (selectedIndex === index && !isSelected) {
+          //   setSelectedId(node._id);
+          // }
           return (
-            <React.Fragment>
+            <React.Fragment key={node._id}>
               <ListItem
                 node={node}
                 isCollapsed={itemsIsCollapsed[node._id]}
                 toggleCollapse={() => toggleCollapse(node._id)}
                 isSelected={selectedId === node._id}
-                isEditingTitle={
-                  editState === EditStates.Title && selectedId === node._id
-                }
+                isEditingTitle={editState === EditStates.Title && isSelected}
                 titleKeydownGenerate={titleKeydownGenerate}
-                isEditingDesc={
-                  editState === EditStates.Desc && selectedId === node._id
-                }
+                isEditingDesc={editState === EditStates.Desc && isSelected}
                 descKeydownGenerate={descKeydownGenerate}
+                removeList={removeList}
               />
             </React.Fragment>
           );
         })}
       </div>
+      <button onClick={() => dispatch(addNode())}>Add node</button>
     </div>
   );
 }
