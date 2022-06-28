@@ -145,20 +145,16 @@ function ListItem(props: props) {
   };
 
   return (
-    <div
-      className={`mb-5 mx-4 px-3 py-3 ${
-        isSelected ? "bg-gray-100" : "bg-inherit"
-      }`}
-    >
+    <div className={`px-3 py-3 ${isSelected ? "bg-gray-800/75" : ""}`}>
       <div className="flex justify-between">
-        <div className="text-doom-green text-2xl flex-grow flex">
+        <div className="text-doom-green text-2xl flex-grow">
           <button className="mr-2" onClick={() => setIsOpened((prev) => !prev)}>
             {isOpened ? <ArrowDropUp /> : <ArrowDropDown />}
           </button>
           <input
             ref={titleRef}
             type="text"
-            className="focus:outline-none inline-block flex-grow"
+            className="focus:outline-none inline-block flex-grow bg-inherit"
             value={titleState}
             onChange={(e) => setTitleState(e.target.value)}
             onKeyDown={(e) => {
@@ -185,14 +181,13 @@ function ListItem(props: props) {
             <DriveFileMove className="text-doom-green mx-1" />
           </button>
           <button onClick={() => removeList(_id)}>
-            <DeleteForever className="text-doom-green mx -1" />
+            <DeleteForever className="text-doom-green mx-1" />
           </button>
         </div>
       </div>
-
       <div className="ml-3">
         <Collapse isOpened={isOpened}>
-          <div className="flex text-rose-300 ">
+          <div className="flex text-rose-300">
             {/* <div className=""> */}
             <span className="">SCHEDULED:&nbsp;</span>
             <CustomDatePicker
@@ -244,7 +239,7 @@ function ListItem(props: props) {
           </div>
           <textarea
             ref={descRef}
-            className={`focus:outline-none resize-none w-full`}
+            className={`focus:outline-none resize-none w-full text-cyan-50 bg-inherit`}
             style={{ height: descHeight < 200 ? descHeight : 200 }}
             value={descState}
             onChange={(e) => {
