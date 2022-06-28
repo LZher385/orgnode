@@ -4,8 +4,9 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Collapse } from "react-collapse";
-import { DayPicker } from "react-day-picker";
+import DatePicker from "react-datepicker";
 import {
   Schedule,
   HourglassTop,
@@ -16,37 +17,35 @@ import {
 } from "@mui/icons-material";
 import { INode } from "../../features";
 import logging from "../../config/logging";
+import { EditStates } from "../../pages/ListPage/ListPage";
+import "react-datepicker/dist/react-datepicker.css";
 import "./ListItem.scss";
+import {
+  editListTitle,
+  editListDescription,
+  editListScheduledDate,
+  editListDeadlineDate,
+  deleteList,
+} from "../../features";
+import { useHotkeys, Options } from "react-hotkeys-hook";
 
 interface props {
   node: INode;
-  isCollapsed: boolean;
-  toggleCollapse: () => void;
   isSelected: boolean;
-  isEditingTitle: boolean;
-  titleKeydownGenerate: (
-    titleInputRef: React.RefObject<HTMLInputElement>,
-    _id: string
-  ) => KeyboardEventHandler<HTMLInputElement>;
-  isEditingDesc: boolean;
-  descKeydownGenerate: (
-    titleInputRef: React.RefObject<HTMLTextAreaElement>,
-    _id: string
-  ) => KeyboardEventHandler<HTMLTextAreaElement>;
-  removeList: (_id: string) => void;
+  editState: EditStates;
+  setEditState: React.Dispatch<React.SetStateAction<EditStates>>;
 }
 
 function ListItem(props: props) {
+  const dispatch = useDispatch();
   const { _id, title, deadlineDate, scheduledDate, description } = props.node;
-  const { isCollapsed, isSelected, isEditingTitle, isEditingDesc } = props;
-  const {
-    toggleCollapse,
-    titleKeydownGenerate,
-    descKeydownGenerate,
-    removeList,
-  } = props;
+  const { isSelected, editState, setEditState } = props;
+
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
+  const scheduleRef = useRef<DatePicker<never, undefined>>(null);
+
+  const [isOpened, setIsOpened] = useState<boolean>(false);
   const [titleState, setTitleState] = useState<string>(title);
   const [descState, setDescState] = useState<string>(description ?? "");
   const [descHeight, setDescHeight] = useState<number>(
@@ -57,15 +56,79 @@ function ListItem(props: props) {
   );
   const [selectedDeadDate, setSelectedDeadDate] = useState<Date | undefined>();
 
-  useEffect(() => {
-    // logging.info("use effect " + title);
-    if (isEditingTitle) {
+  const hotkeyOptions: Options = {
+    filter: (e) =>
+      isSelected &&
+      editState !== EditStates.Schedule &&
+      editState !== EditStates.Deadline,
+    filterPreventDefault: false,
+    keydown: true,
+  };
+
+  useHotkeys(
+    "tab",
+    () => {
+      setIsOpened((prev) => !prev);
+    },
+    hotkeyOptions
+  );
+
+  useHotkeys(
+    "i",
+    () => {
+      setEditState(EditStates.Title);
       titleRef.current?.focus();
-    }
-    if (isEditingDesc) {
+    },
+    { ...hotkeyOptions, keyup: true, keydown: false }
+  );
+
+  useHotkeys(
+    "shift + i",
+    () => {
+      setEditState(EditStates.Desc);
+      setIsOpened(true);
       descRef.current?.focus();
-    }
-  });
+    },
+    { ...hotkeyOptions, keyup: true, keydown: false }
+  );
+
+  useHotkeys(
+    "Delete",
+    () => {
+      removeList(_id);
+    },
+    hotkeyOptions
+  );
+
+  useHotkeys(
+    "s",
+    () => {
+      setEditState(EditStates.Schedule);
+      setIsOpened(true);
+      scheduleRef.current?.setFocus();
+    },
+    { ...hotkeyOptions, keyup: true, keydown: false }
+  );
+
+  const saveTitle = (_id: string, title: string) => {
+    dispatch(editListTitle({ _id, title }));
+  };
+
+  const saveDescription = (_id: string, desc: string) => {
+    dispatch(editListDescription({ _id, desc }));
+  };
+
+  const removeList = (_id: string) => {
+    dispatch(deleteList(_id));
+  };
+
+  const scheduleList = (_id: string, date: Date) => {
+    dispatch(editListScheduledDate({ _id, date }));
+  };
+
+  const deadlineList = (_id: string, date: Date) => {
+    dispatch(editListDeadlineDate({ _id, date }));
+  };
 
   return (
     <div
@@ -75,8 +138,8 @@ function ListItem(props: props) {
     >
       <div className="flex justify-between">
         <div className="text-doom-green text-2xl flex-grow flex">
-          <button className="mr-2" onClick={toggleCollapse}>
-            {isCollapsed ? <ArrowDropUp /> : <ArrowDropDown />}
+          <button className="mr-2" onClick={() => setIsOpened((prev) => !prev)}>
+            {isOpened ? <ArrowDropUp /> : <ArrowDropDown />}
           </button>
           {/* <span>&#x2022; </span> */}
           <input
@@ -85,11 +148,21 @@ function ListItem(props: props) {
             className="focus:outline-none inline-block flex-grow"
             value={titleState}
             onChange={(e) => setTitleState(e.target.value)}
-            onKeyDown={titleKeydownGenerate(titleRef, _id)}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
+                saveTitle(_id, titleRef!.current!.value);
+                titleRef.current?.blur();
+              }
+              setEditState(EditStates.None);
+            }}
           />
         </div>
         <div className="ml-2">
-          <button>
+          <button
+            onClick={() => {
+              scheduleRef.current?.setFocus();
+            }}
+          >
             <Schedule className="text-doom-green mx-1" />
           </button>
           <button>
@@ -105,12 +178,35 @@ function ListItem(props: props) {
       </div>
 
       <div className="ml-3">
-        <Collapse isOpened={isCollapsed}>
+        <Collapse isOpened={isOpened}>
           <div className="flex text-rose-300">
-            <span className="">SCHEDULED: {scheduledDate?.toDateString()}</span>
-            <span className="ml-3">
+            {/* <span className="">SCHEDULED: {scheduledDate?.toDateString()}</span> */}
+            <DatePicker
+              ref={scheduleRef}
+              selected={selectedScheDate}
+              placeholderText={`SCHEDULED: ${scheduledDate}`}
+              onChange={(date) => setSelectedScheDate(date!)}
+              // showTimeSelect
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  scheduleRef.current?.setBlur();
+                }
+              }}
+              minDate={new Date()}
+              onCalendarOpen={() => {
+                logging.info("Calendar opened");
+                // setEditState(EditStates.Schedule);
+              }}
+              onCalendarClose={() => {
+                logging.info("Calendar closed");
+                // scheduleRef.current?.setBlur();
+                setEditState(EditStates.None);
+                // setTest(false);
+              }}
+            />
+            {/* <span className="ml-3">
               DEADLINE: {deadlineDate?.toDateString()}
-            </span>
+            </span> */}
           </div>
           <textarea
             ref={descRef}
@@ -121,20 +217,16 @@ function ListItem(props: props) {
               setDescState(e.target.value);
               setDescHeight(descRef.current?.scrollHeight!);
             }}
-            onKeyDown={descKeydownGenerate(descRef, _id)}
+            onKeyDown={(e) => {
+              if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
+                saveTitle(_id, descRef!.current!.value);
+                descRef.current?.blur();
+              }
+              setEditState(EditStates.None);
+            }}
           />
         </Collapse>
       </div>
-
-      {/* {_id === "node1" && (
-        <div className="absolute">
-          <DayPicker
-            mode="single"
-            selected={selectedScheDate}
-            onSelect={setSelectedScheDate}
-          />
-        </div>
-      )} */}
     </div>
   );
 }
