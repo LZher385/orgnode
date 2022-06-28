@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { useHotkeys, Options } from "react-hotkeys-hook";
-import ListItem from "../../components/ListItem/ListItem";
+import { ListItem } from "../../components";
 import logging from "../../config/logging";
 import { listNodes, addNode } from "../../features";
 

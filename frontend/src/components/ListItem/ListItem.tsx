@@ -27,6 +27,7 @@ import {
   editListDeadlineDate,
   deleteList,
 } from "../../features";
+import { CustomDatePicker } from "../";
 import { useHotkeys, Options } from "react-hotkeys-hook";
 
 interface props {
@@ -44,6 +45,7 @@ function ListItem(props: props) {
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const scheduleRef = useRef<DatePicker<never, undefined>>(null);
+  const deadlineRef = useRef<DatePicker<never, undefined>>(null);
 
   const [isOpened, setIsOpened] = useState<boolean>(false);
   const [titleState, setTitleState] = useState<string>(title);
@@ -54,7 +56,9 @@ function ListItem(props: props) {
   const [selectedScheDate, setSelectedScheDate] = useState<Date | undefined>(
     scheduledDate
   );
-  const [selectedDeadDate, setSelectedDeadDate] = useState<Date | undefined>();
+  const [selectedDeadDate, setSelectedDeadDate] = useState<Date | undefined>(
+    deadlineDate
+  );
 
   const hotkeyOptions: Options = {
     filter: (e) =>
@@ -110,6 +114,16 @@ function ListItem(props: props) {
     { ...hotkeyOptions, keyup: true, keydown: false }
   );
 
+  useHotkeys(
+    "d",
+    () => {
+      setEditState(EditStates.Deadline);
+      setIsOpened(true);
+      deadlineRef.current?.setFocus();
+    },
+    { ...hotkeyOptions, keyup: true, keydown: false }
+  );
+
   const saveTitle = (_id: string, title: string) => {
     dispatch(editListTitle({ _id, title }));
   };
@@ -122,11 +136,11 @@ function ListItem(props: props) {
     dispatch(deleteList(_id));
   };
 
-  const scheduleList = (_id: string, date: Date) => {
+  const saveListSchedule = (_id: string, date: Date) => {
     dispatch(editListScheduledDate({ _id, date }));
   };
 
-  const deadlineList = (_id: string, date: Date) => {
+  const saveListDeadline = (_id: string, date: Date) => {
     dispatch(editListDeadlineDate({ _id, date }));
   };
 
@@ -141,7 +155,6 @@ function ListItem(props: props) {
           <button className="mr-2" onClick={() => setIsOpened((prev) => !prev)}>
             {isOpened ? <ArrowDropUp /> : <ArrowDropDown />}
           </button>
-          {/* <span>&#x2022; </span> */}
           <input
             ref={titleRef}
             type="text"
@@ -179,34 +192,55 @@ function ListItem(props: props) {
 
       <div className="ml-3">
         <Collapse isOpened={isOpened}>
-          <div className="flex text-rose-300">
-            {/* <span className="">SCHEDULED: {scheduledDate?.toDateString()}</span> */}
-            <DatePicker
-              ref={scheduleRef}
-              selected={selectedScheDate}
-              placeholderText={`SCHEDULED: ${scheduledDate}`}
-              onChange={(date) => setSelectedScheDate(date!)}
-              // showTimeSelect
+          <div className="flex text-rose-300 ">
+            {/* <div className=""> */}
+            <span className="">SCHEDULED:&nbsp;</span>
+            <CustomDatePicker
+              elementRef={scheduleRef}
+              selectedDate={selectedScheDate!}
+              setSelectedDate={setSelectedScheDate}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
                   scheduleRef.current?.setBlur();
                 }
+                if (e.key === "Enter") {
+                  saveListSchedule(_id, selectedScheDate!);
+                  scheduleRef.current?.setBlur();
+                }
               }}
-              minDate={new Date()}
               onCalendarOpen={() => {
                 logging.info("Calendar opened");
-                // setEditState(EditStates.Schedule);
               }}
               onCalendarClose={() => {
                 logging.info("Calendar closed");
-                // scheduleRef.current?.setBlur();
                 setEditState(EditStates.None);
-                // setTest(false);
               }}
             />
-            {/* <span className="ml-3">
-              DEADLINE: {deadlineDate?.toDateString()}
-            </span> */}
+            {/* </div> */}
+            {/* <div> */}
+            <span className="">DEADLINE:&nbsp;</span>
+            <CustomDatePicker
+              elementRef={deadlineRef}
+              selectedDate={selectedDeadDate!}
+              setSelectedDate={setSelectedDeadDate}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  scheduleRef.current?.setBlur();
+                }
+                if (e.key === "Enter") {
+                  saveListDeadline(_id, selectedDeadDate!);
+                  deadlineRef.current?.setBlur();
+                }
+              }}
+              onCalendarOpen={() => {
+                logging.info("Calendar opened");
+              }}
+              onCalendarClose={() => {
+                logging.info("Calendar closed");
+                setEditState(EditStates.None);
+              }}
+            />
+            {/* </div> */}
           </div>
           <textarea
             ref={descRef}
@@ -219,7 +253,7 @@ function ListItem(props: props) {
             }}
             onKeyDown={(e) => {
               if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
-                saveTitle(_id, descRef!.current!.value);
+                saveDescription(_id, descRef!.current!.value);
                 descRef.current?.blur();
               }
               setEditState(EditStates.None);
