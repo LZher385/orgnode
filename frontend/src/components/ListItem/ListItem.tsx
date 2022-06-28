@@ -246,6 +246,12 @@ function ListItem(props: props) {
               setDescState(e.target.value);
               setDescHeight(descRef.current?.scrollHeight!);
             }}
+            onFocus={(e) => {
+              e.currentTarget.setSelectionRange(
+                e.currentTarget.value.length,
+                e.currentTarget.value.length
+              );
+            }}
             onKeyDown={(e) => {
               if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
                 saveDescription(_id, descRef!.current!.value);
