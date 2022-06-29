@@ -28,6 +28,11 @@ function ListPage(props: Props) {
   });
   const selectedId = indexToIdMap[selectedIndex];
 
+  useEffect(() => {
+    if (selectedIndex >= nodes.length) {
+      setSelectedIndex(nodes.length - 1);
+    }
+  }, [selectedIndex, nodes.length]);
   // Hotkeys
   const hotkeyOptions: Options = {
     filter: (e) =>

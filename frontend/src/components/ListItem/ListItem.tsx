@@ -188,31 +188,30 @@ function ListItem(props: props) {
       <div className="ml-3">
         <Collapse isOpened={isOpened}>
           <div className="flex text-rose-300">
-            {/* <div className=""> */}
-            <span className="">SCHEDULED:&nbsp;</span>
-            <CustomDatePicker
-              elementRef={scheduleRef}
-              selectedDate={selectedScheDate!}
-              setSelectedDate={setSelectedScheDate}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  scheduleRef.current?.setBlur();
-                }
-                if (e.key === "Enter") {
-                  saveListSchedule(_id, selectedScheDate!);
-                  scheduleRef.current?.setBlur();
-                }
-              }}
-              onCalendarOpen={() => {
-                logging.info("Calendar opened");
-              }}
-              onCalendarClose={() => {
-                logging.info("Calendar closed");
-                setEditState(EditStates.None);
-              }}
-            />
-            {/* </div> */}
-            {/* <div> */}
+            <div className="mr-2">
+              <span className="">SCHEDULED:&nbsp;</span>
+              <CustomDatePicker
+                elementRef={scheduleRef}
+                selectedDate={selectedScheDate!}
+                setSelectedDate={setSelectedScheDate}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    scheduleRef.current?.setBlur();
+                  }
+                  if (e.key === "Enter") {
+                    saveListSchedule(_id, selectedScheDate!);
+                    scheduleRef.current?.setBlur();
+                  }
+                }}
+                onCalendarOpen={() => {
+                  logging.info("Calendar opened");
+                }}
+                onCalendarClose={() => {
+                  logging.info("Calendar closed");
+                  setEditState(EditStates.None);
+                }}
+              />
+            </div>
             <span className="">DEADLINE:&nbsp;</span>
             <CustomDatePicker
               elementRef={deadlineRef}
@@ -220,7 +219,7 @@ function ListItem(props: props) {
               setSelectedDate={setSelectedDeadDate}
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                  scheduleRef.current?.setBlur();
+                  deadlineRef.current?.setBlur();
                 }
                 if (e.key === "Enter") {
                   saveListDeadline(_id, selectedDeadDate!);
@@ -235,7 +234,6 @@ function ListItem(props: props) {
                 setEditState(EditStates.None);
               }}
             />
-            {/* </div> */}
           </div>
           <textarea
             ref={descRef}
