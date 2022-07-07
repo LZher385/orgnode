@@ -5,23 +5,17 @@ import { RootState } from "../../app/store";
 import { useHotkeys, Options } from "react-hotkeys-hook";
 import { ListItem } from "../../components";
 import logging from "../../config/logging";
-import { listNodes, addNode } from "../../features";
+import { listNodes, addNode, EditStates } from "../../features";
+import { useNavigate } from "react-router-dom";
 
 type Props = {};
-
-export enum EditStates {
-  None,
-  Title,
-  Desc,
-  Schedule,
-  Deadline,
-}
 
 function ListPage(props: Props) {
   const dispatch = useDispatch();
   const nodes = useSelector((state: RootState) => state.nodes.value);
+  const editState = useSelector((state: RootState) => state.global.editState);
+  let navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
-  const [editState, setEditState] = useState<EditStates>(EditStates.None);
   const indexToIdMap: { [key: number]: string } = {};
   nodes.forEach((node, idx) => {
     indexToIdMap[idx] = node._id;
@@ -35,7 +29,7 @@ function ListPage(props: Props) {
   }, [selectedIndex, nodes.length]);
   // Hotkeys
   const hotkeyOptions: Options = {
-    filter: (e) =>
+    filter: (_) =>
       nodes.length > 0 &&
       editState !== EditStates.Schedule &&
       editState !== EditStates.Deadline,
@@ -59,6 +53,14 @@ function ListPage(props: Props) {
       setSelectedIndex((prevState) =>
         prevState > 0 ? prevState - 1 : prevState
       );
+    },
+    hotkeyOptions
+  );
+
+  useHotkeys(
+    "Enter",
+    () => {
+      navigate(`/node/${selectedId}`);
     },
     hotkeyOptions
   );
@@ -91,17 +93,11 @@ function ListPage(props: Props) {
         {nodes.map(function (node) {
           return (
             <React.Fragment key={node._id}>
-              <ListItem
-                node={node}
-                editState={editState}
-                isSelected={node._id === selectedId}
-                setEditState={setEditState}
-              />
+              <ListItem node={node} isSelected={node._id === selectedId} />
             </React.Fragment>
           );
         })}
       </div>
-      <button onClick={() => dispatch(addNode())}>Add dummy node</button>
     </div>
   );
 }

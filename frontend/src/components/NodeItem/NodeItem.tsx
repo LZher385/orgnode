@@ -15,33 +15,31 @@ import {
   ArrowDropUp,
   DeleteForever,
 } from "@mui/icons-material";
-import { INode, setEditState } from "../../features";
+import { EditStates, INode } from "../../features";
 import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
-import "./ListItem.scss";
 import {
   editListTitle,
   editListDescription,
   editListScheduledDate,
   editListDeadlineDate,
   deleteList,
-  EditStates,
 } from "../../features";
 import { CustomDatePicker } from "../";
 import { useHotkeys, Options } from "react-hotkeys-hook";
-import NodeItem from "../NodeItem/NodeItem";
-import { RootState } from "../../app/store";
 
 interface props {
   node: INode;
   isSelected: boolean;
+  editState: EditStates;
+  setEditState: React.Dispatch<React.SetStateAction<EditStates>>;
 }
 
-function ListItem(props: props) {
+function NodeItem(props: props) {
   const dispatch = useDispatch();
-  const editState = useSelector((state: RootState) => state.global.editState);
-  const { _id, title, deadlineDate, scheduledDate, description } = props.node;
-  const { isSelected } = props;
+  const { _id, title, deadlineDate, scheduledDate, description, children } =
+    props.node;
+  const { isSelected, editState, setEditState } = props;
 
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
@@ -62,7 +60,7 @@ function ListItem(props: props) {
   );
 
   const hotkeyOptions: Options = {
-    filter: (_) =>
+    filter: (e) =>
       isSelected &&
       editState !== EditStates.Schedule &&
       editState !== EditStates.Deadline,
@@ -81,7 +79,7 @@ function ListItem(props: props) {
   useHotkeys(
     "i",
     () => {
-      dispatch(setEditState({ editState: EditStates.Title }));
+      setEditState(EditStates.Title);
       titleRef.current?.focus();
     },
     { ...hotkeyOptions, keyup: true, keydown: false }
@@ -90,7 +88,7 @@ function ListItem(props: props) {
   useHotkeys(
     "shift + i",
     () => {
-      dispatch(setEditState({ editState: EditStates.Desc }));
+      setEditState(EditStates.Desc);
       setIsOpened(true);
       descRef.current?.focus();
     },
@@ -108,7 +106,7 @@ function ListItem(props: props) {
   useHotkeys(
     "s",
     () => {
-      dispatch(setEditState({ editState: EditStates.Schedule }));
+      setEditState(EditStates.Schedule);
       setIsOpened(true);
       scheduleRef.current?.setFocus();
     },
@@ -118,7 +116,7 @@ function ListItem(props: props) {
   useHotkeys(
     "d",
     () => {
-      dispatch(setEditState({ editState: EditStates.Deadline }));
+      setEditState(EditStates.Deadline);
       setIsOpened(true);
       deadlineRef.current?.setFocus();
     },
@@ -163,27 +161,19 @@ function ListItem(props: props) {
                 saveTitle(_id, titleRef!.current!.value);
                 titleRef.current?.blur();
               }
-              dispatch(setEditState({ editState: EditStates.None }));
+              setEditState(EditStates.None);
             }}
           />
         </div>
         <div className="ml-2">
           <button
             onClick={() => {
-              dispatch(setEditState({ editState: EditStates.Schedule }));
-              setIsOpened(true);
               scheduleRef.current?.setFocus();
             }}
           >
             <Schedule className="text-doom-green mx-1" />{" "}
           </button>{" "}
-          <button
-            onClick={() => {
-              dispatch(setEditState({ editState: EditStates.Deadline }));
-              setIsOpened(true);
-              deadlineRef.current?.setFocus();
-            }}
-          >
+          <button>
             <HourglassTop className="text-doom-green mx-1" />
           </button>
           <button>
@@ -217,7 +207,7 @@ function ListItem(props: props) {
                 }}
                 onCalendarClose={() => {
                   logging.info("Calendar closed");
-                  dispatch(setEditState({ editState: EditStates.None }));
+                  setEditState(EditStates.None);
                 }}
               />
             </div>
@@ -240,7 +230,7 @@ function ListItem(props: props) {
               }}
               onCalendarClose={() => {
                 logging.info("Calendar closed");
-                dispatch(setEditState({ editState: EditStates.None }));
+                setEditState(EditStates.None);
               }}
             />
           </div>
@@ -264,13 +254,23 @@ function ListItem(props: props) {
                 saveDescription(_id, descRef!.current!.value);
                 descRef.current?.blur();
               }
-              dispatch(setEditState({ editState: EditStates.None }));
+              setEditState(EditStates.None);
             }}
           />
+          {children?.map((child) => (
+            <div className="ml-2">
+              <NodeItem
+                node={child}
+                setEditState={setEditState}
+                editState={EditStates.None}
+                isSelected={false}
+              />
+            </div>
+          ))}
         </Collapse>
       </div>
     </div>
   );
 }
 
-export default ListItem;
+export default NodeItem;

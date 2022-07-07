@@ -38,7 +38,7 @@ const initialState: NodeState = {
       _id: "node1",
       title: "Root Node 1",
       description: "This is root node 1",
-      children: [dummyChild("3"), dummyChild("4")],
+      children: [dummyChild("3"), dummyChild("4"), dummyChild("5")],
       scheduledDate: new Date(),
       deadlineDate: new Date(),
       isRoot: true,

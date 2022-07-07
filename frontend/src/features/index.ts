@@ -9,6 +9,8 @@ import {
   deleteList,
   INode,
 } from "./nodeSlice";
+import globalReducer from "./globalSlice";
+import { setEditState, EditStates } from "./globalSlice";
 
 export {
   nodesReducer,
@@ -19,5 +21,8 @@ export {
   editListScheduledDate,
   editListDeadlineDate,
   deleteList,
+  globalReducer,
+  setEditState,
+  EditStates,
 };
 export type { INode };

@@ -1,9 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { nodesReducer } from "../features";
+import { globalReducer, nodesReducer } from "../features";
 
 export const store = configureStore({
   reducer: {
     nodes: nodesReducer,
+    global: globalReducer,
   },
 });
 
