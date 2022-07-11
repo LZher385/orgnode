@@ -15,7 +15,13 @@ import {
   ArrowDropUp,
   DeleteForever,
 } from "@mui/icons-material";
-import { EditStates, INode } from "../../features";
+import {
+  EditStates,
+  INode,
+  setCurrentId,
+  setEditState,
+  toggleOpenedId,
+} from "../../features";
 import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -27,26 +33,26 @@ import {
 } from "../../features";
 import { CustomDatePicker } from "../";
 import { useHotkeys, Options } from "react-hotkeys-hook";
+import { RootState } from "../../app/store";
 
 interface props {
   node: INode;
-  isSelected: boolean;
-  editState: EditStates;
-  setEditState: React.Dispatch<React.SetStateAction<EditStates>>;
 }
 
 function NodeItem(props: props) {
   const dispatch = useDispatch();
+  const editState = useSelector((state: RootState) => state.global.editState);
   const { _id, title, deadlineDate, scheduledDate, description, children } =
     props.node;
-  const { isSelected, editState, setEditState } = props;
-
+  const isSelected =
+    useSelector((state: RootState) => state.global.currentId) === _id;
+  const isOpened =
+    _id in useSelector((state: RootState) => state.global.openedIds);
   const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const scheduleRef = useRef<DatePicker<never, undefined>>(null);
   const deadlineRef = useRef<DatePicker<never, undefined>>(null);
 
-  const [isOpened, setIsOpened] = useState<boolean>(false);
   const [titleState, setTitleState] = useState<string>(title);
   const [descState, setDescState] = useState<string>(description ?? "");
   const [descHeight, setDescHeight] = useState<number>(
@@ -60,7 +66,7 @@ function NodeItem(props: props) {
   );
 
   const hotkeyOptions: Options = {
-    filter: (e) =>
+    filter: (_) =>
       isSelected &&
       editState !== EditStates.Schedule &&
       editState !== EditStates.Deadline,
@@ -71,7 +77,7 @@ function NodeItem(props: props) {
   useHotkeys(
     "tab",
     () => {
-      setIsOpened((prev) => !prev);
+      dispatch(toggleOpenedId({ id: _id }));
     },
     hotkeyOptions
   );
@@ -79,7 +85,7 @@ function NodeItem(props: props) {
   useHotkeys(
     "i",
     () => {
-      setEditState(EditStates.Title);
+      dispatch(setEditState({ editState: EditStates.Title }));
       titleRef.current?.focus();
     },
     { ...hotkeyOptions, keyup: true, keydown: false }
@@ -88,8 +94,8 @@ function NodeItem(props: props) {
   useHotkeys(
     "shift + i",
     () => {
-      setEditState(EditStates.Desc);
-      setIsOpened(true);
+      dispatch(setEditState({ editState: EditStates.Desc }));
+      dispatch(toggleOpenedId({ id: _id }));
       descRef.current?.focus();
     },
     { ...hotkeyOptions, keyup: true, keydown: false }
@@ -106,8 +112,8 @@ function NodeItem(props: props) {
   useHotkeys(
     "s",
     () => {
-      setEditState(EditStates.Schedule);
-      setIsOpened(true);
+      dispatch(setEditState({ editState: EditStates.Schedule }));
+      dispatch(toggleOpenedId({ id: _id }));
       scheduleRef.current?.setFocus();
     },
     { ...hotkeyOptions, keyup: true, keydown: false }
@@ -116,8 +122,8 @@ function NodeItem(props: props) {
   useHotkeys(
     "d",
     () => {
-      setEditState(EditStates.Deadline);
-      setIsOpened(true);
+      dispatch(setEditState({ editState: EditStates.Deadline }));
+      dispatch(toggleOpenedId({ id: _id }));
       deadlineRef.current?.setFocus();
     },
     { ...hotkeyOptions, keyup: true, keydown: false }
@@ -147,7 +153,10 @@ function NodeItem(props: props) {
     <div className={`px-3 py-3 ${isSelected ? "bg-gray-800/75" : ""}`}>
       <div className="flex justify-between">
         <div className="text-doom-green text-2xl flex-grow">
-          <button className="mr-2" onClick={() => setIsOpened((prev) => !prev)}>
+          <button
+            className="mr-2"
+            onClick={() => dispatch(toggleOpenedId({ id: _id }))}
+          >
             {isOpened ? <ArrowDropUp /> : <ArrowDropDown />}
           </button>
           <input
@@ -161,7 +170,7 @@ function NodeItem(props: props) {
                 saveTitle(_id, titleRef!.current!.value);
                 titleRef.current?.blur();
               }
-              setEditState(EditStates.None);
+              dispatch(setEditState({ editState: EditStates.None }));
             }}
           />
         </div>
@@ -207,7 +216,7 @@ function NodeItem(props: props) {
                 }}
                 onCalendarClose={() => {
                   logging.info("Calendar closed");
-                  setEditState(EditStates.None);
+                  dispatch(setEditState({ editState: EditStates.None }));
                 }}
               />
             </div>
@@ -230,7 +239,7 @@ function NodeItem(props: props) {
               }}
               onCalendarClose={() => {
                 logging.info("Calendar closed");
-                setEditState(EditStates.None);
+                dispatch(setEditState({ editState: EditStates.None }));
               }}
             />
           </div>
@@ -254,17 +263,13 @@ function NodeItem(props: props) {
                 saveDescription(_id, descRef!.current!.value);
                 descRef.current?.blur();
               }
-              setEditState(EditStates.None);
+
+              dispatch(setEditState({ editState: EditStates.None }));
             }}
           />
           {children?.map((child) => (
-            <div className="ml-2">
-              <NodeItem
-                node={child}
-                setEditState={setEditState}
-                editState={EditStates.None}
-                isSelected={false}
-              />
+            <div className="ml-2" key={child._id}>
+              <NodeItem node={child}/>
             </div>
           ))}
         </Collapse>

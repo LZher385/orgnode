@@ -6,7 +6,10 @@ export interface INode {
   _id: string;
   title: string;
   description?: string;
-  children?: INode[];
+  children: INode[];
+  parentId?: string;
+  prevSibId?: string;
+  nextSibId?: string;
   scheduledDate?: Date;
   deadlineDate?: Date;
   isRoot: boolean;
@@ -18,12 +21,15 @@ interface NodeState {
   value: INode[];
 }
 
-function dummyChild(id: string): INode {
+function dummyChild(id: string, parentId?: string, prevId?: string, nextId?: string): INode {
   return {
     _id: "node" + id,
     title: "y bully me",
     description: "pls",
-    children: undefined,
+    children: [],
+    parentId: parentId,
+    prevSibId: prevId,
+    nextSibId: nextId,
     scheduledDate: undefined,
     deadlineDate: undefined,
     isRoot: false,
@@ -38,9 +44,9 @@ const initialState: NodeState = {
       _id: "node1",
       title: "Root Node 1",
       description: "This is root node 1",
-      children: [dummyChild("3"), dummyChild("4"), dummyChild("5")],
-      scheduledDate: new Date(),
-      deadlineDate: new Date(),
+      children: [dummyChild("3", "node1", undefined, "node4"), dummyChild("4", "node1", "node3", "node5"), dummyChild("5", "node1", "node4", undefined)],
+      scheduledDate: undefined,
+      deadlineDate: undefined,
       isRoot: true,
       createdAt: undefined,
       updatedAt: undefined,
@@ -49,9 +55,9 @@ const initialState: NodeState = {
       _id: "node2",
       title: "Root Node 2",
       description: "This is root node 2",
-      children: undefined,
-      scheduledDate: new Date(),
-      deadlineDate: new Date(),
+      children: [],
+      scheduledDate: undefined,
+      deadlineDate: undefined,
       isRoot: true,
       createdAt: undefined,
       updatedAt: undefined,
@@ -122,6 +128,7 @@ export const nodeSlice = createSlice({
       });
     },
     deleteList: (state, action: PayloadAction<string>) => {
+      // update siblings
       state.value = state.value.filter((list) => list._id !== action.payload);
     },
     refileList: () => {},
