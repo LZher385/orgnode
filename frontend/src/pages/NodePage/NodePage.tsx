@@ -1,12 +1,13 @@
-import React, { KeyboardEventHandler, useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
-import { useHotkeys, Options } from "react-hotkeys-hook";
 import { NodeItem } from "../../components";
 import logging from "../../config/logging";
-import { listNodes, addNode, INode, setCurrentId } from "../../features";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { fetchNodes, nodesSelectors } from "../../features";
+import { Add } from "@mui/icons-material";
+import { fontSize } from "@mui/system";
 
 type Props = {};
 
@@ -21,74 +22,40 @@ export enum EditStates {
 function NodePage(props: Props) {
   const dispatch = useDispatch();
   const editState = useSelector((state: RootState) => state.global.editState);
-  // get id of root node
   const { id } = useParams();
-  // TODO create another function to fetch just the node we want
-  const nodes = useSelector((state: RootState) => state.nodes.value);
-  // get root node
-  const rootNode = nodes.find((n) => n._id === id);
+  const rootNode = useSelector((state: RootState) =>
+    nodesSelectors.selectById(state, id!)
+  );
 
-  const currentId = useSelector((state: RootState) => state.global.currentId);
-  const openedIds = useSelector((state: RootState) => state.global.openedIds);
+  const titleRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    dispatch(setCurrentId({currentId: id!}));
-  }, []);
-
-  // Hotkeys
-  const hotkeyOptions: Options = {
-    filter: (_) => editState !== EditStates.Deadline,
-    filterPreventDefault: false,
-    keydown: true,
-  };
-
-  useHotkeys("j", () => {
-  const node = nodes.find((n) => n._id === currentId);
-    if (currentId in openedIds && (node?.children?.length ?? -1) > 0) {
-      // is open, go to first child
-      dispatch(setCurrentId({currentId: node!.children![0]._id}));
-    } else if (node?.nextSibId) {
-      // has next sibling, go to next sibling
-      dispatch(setCurrentId({currentId: node?.nextSibId}));
-    } else {
-      // go to closest ancestor nextSibling
-      const currNodeId = node?.parentId;
-      //while (currNodeId) {
-      //  currNode = nodes.
-      //  if (currNode
-      //}
-    }
-  }, hotkeyOptions);
-
-  useHotkeys("k", () => {}, hotkeyOptions);
-
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    console.log(`Key pressed: ${event.key}`);
-
-    // Prevent default behaviours
-    if (event.key === "Tab") {
-      event.preventDefault();
-    }
-  }, []);
-
-  useEffect(() => {
-    // attach the event listener
-    document.addEventListener("keydown", handleKeyPress);
-
-    // remove the event listener
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
+  const [titleState, setTitleState] = useState<string>(rootNode!.title);
 
   return (
     <div className="h-screen max-w-screen-xl mx-auto">
-      <header className="py-6 px-4">
-        <h1 className="text-doom-green text-5xl underline">{rootNode?.title}</h1>
+      <header className="py-6 px-4 flex">
+        <input
+          ref={titleRef}
+          type="text"
+          className="focus:outline-none inline-block flex-grow bg-inherit text-doom-green text-5xl underline"
+          value={titleState}
+          onChange={(e) => setTitleState(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
+              // saveTitle(_id, titleRef!.current!.value);
+              titleRef.current?.blur();
+            }
+          }}
+        />
+        <button>
+          <Add className="text-doom-green" style={{ fontSize: "50px" }}></Add>
+        </button>
       </header>
-      <div className="mx-5">
-        <NodeItem node={rootNode!} />
-      </div>
+      {rootNode!.children?.map((child) => (
+        <div className="ml-2" key={child._id}>
+          <NodeItem id={child._id} />
+        </div>
+      ))}
     </div>
   );
 }

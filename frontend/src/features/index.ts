@@ -1,6 +1,8 @@
 import nodesReducer from "./nodeSlice";
 import {
-  listNodes,
+  fetchNodes,
+  fetchListNodes,
+  nodesSelectors,
   addNode,
   editListTitle,
   editListDescription,
@@ -10,11 +12,13 @@ import {
   INode,
 } from "./nodeSlice";
 import globalReducer from "./globalSlice";
-import { setEditState, EditStates, setCurrentId, toggleOpenedId } from "./globalSlice";
+import { setEditState, EditStates } from "./globalSlice";
 
 export {
   nodesReducer,
-  listNodes,
+  fetchListNodes,
+  fetchNodes,
+  nodesSelectors,
   addNode,
   editListTitle,
   editListDescription,
@@ -24,7 +28,5 @@ export {
   globalReducer,
   setEditState,
   EditStates,
-  setCurrentId,
-  toggleOpenedId
 };
 export type { INode };

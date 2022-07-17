@@ -8,7 +8,7 @@ interface Props {
   elementRef: React.RefObject<DatePicker<never, undefined>>;
   selectedDate: Date;
   setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
-  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  // onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   onCalendarOpen: () => void;
   onCalendarClose: () => void;
 }
@@ -18,7 +18,6 @@ const CustomDatePicker = (props: Props) => {
     elementRef,
     selectedDate,
     setSelectedDate,
-    onKeyDown,
     onCalendarOpen,
     onCalendarClose,
   } = props;
@@ -33,7 +32,6 @@ const CustomDatePicker = (props: Props) => {
         logging.info("On change");
       }}
       // showTimeSelect
-      onKeyDown={onKeyDown}
       minDate={new Date()}
       onCalendarOpen={onCalendarOpen}
       onCalendarClose={onCalendarClose}

@@ -27,20 +27,9 @@ export const globalSlice = createSlice({
     setEditState: (state, action: PayloadAction<{ editState: EditStates }>) => {
       state.editState = action.payload.editState;
     },
-    setCurrentId: (state, action: PayloadAction<{ currentId: string }>) => {
-      state.currentId = action.payload.currentId;
-    },
-    toggleOpenedId: (state, action: PayloadAction<{ id: string }>) => {
-      if (action.payload.id in state.openedIds) {
-        delete state.openedIds[action.payload.id];
-      } else {
-        state.openedIds[action.payload.id] = true;
-      }
-    },
   },
 });
 
-export const { setEditState, setCurrentId, toggleOpenedId } =
-  globalSlice.actions;
+export const { setEditState } = globalSlice.actions;
 
 export default globalSlice.reducer;

@@ -1,6 +1,11 @@
 import { ConstructionOutlined } from "@mui/icons-material";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { nodesReducer } from ".";
+import {
+  createSlice,
+  PayloadAction,
+  createEntityAdapter,
+} from "@reduxjs/toolkit";
+import { RootState } from "../app/store";
+import logging from "../config/logging";
 
 export interface INode {
   _id: string;
@@ -8,8 +13,6 @@ export interface INode {
   description?: string;
   children: INode[];
   parentId?: string;
-  prevSibId?: string;
-  nextSibId?: string;
   scheduledDate?: Date;
   deadlineDate?: Date;
   isRoot: boolean;
@@ -17,19 +20,13 @@ export interface INode {
   updatedAt?: Date;
 }
 
-interface NodeState {
-  value: INode[];
-}
-
-function dummyChild(id: string, parentId?: string, prevId?: string, nextId?: string): INode {
+function dummyChild(id: string, parentId: string): INode {
   return {
-    _id: "node" + id,
-    title: "y bully me",
+    _id: id,
+    title: id,
     description: "pls",
     children: [],
     parentId: parentId,
-    prevSibId: prevId,
-    nextSibId: nextId,
     scheduledDate: undefined,
     deadlineDate: undefined,
     isRoot: false,
@@ -38,105 +35,129 @@ function dummyChild(id: string, parentId?: string, prevId?: string, nextId?: str
   };
 }
 
-const initialState: NodeState = {
-  value: [
-    {
-      _id: "node1",
-      title: "Root Node 1",
-      description: "This is root node 1",
-      children: [dummyChild("3", "node1", undefined, "node4"), dummyChild("4", "node1", "node3", "node5"), dummyChild("5", "node1", "node4", undefined)],
-      scheduledDate: undefined,
-      deadlineDate: undefined,
-      isRoot: true,
-      createdAt: undefined,
-      updatedAt: undefined,
-    },
-    {
-      _id: "node2",
-      title: "Root Node 2",
-      description: "This is root node 2",
-      children: [],
-      scheduledDate: undefined,
-      deadlineDate: undefined,
-      isRoot: true,
-      createdAt: undefined,
-      updatedAt: undefined,
-    },
-  ],
+const dummyData: INode[] = [
+  {
+    _id: "node1",
+    title: "Root Node 1",
+    description: "This is root node 1",
+    children: [
+      dummyChild("node3", "node1"),
+      dummyChild("node4", "node1"),
+      dummyChild("node5", "node1"),
+    ],
+    scheduledDate: undefined,
+    deadlineDate: undefined,
+    isRoot: true,
+    createdAt: undefined,
+    updatedAt: undefined,
+  },
+  {
+    _id: "node2",
+    title: "Root Node 2",
+    description: "This is root node 2",
+    children: [],
+    scheduledDate: undefined,
+    deadlineDate: undefined,
+    isRoot: true,
+    createdAt: undefined,
+    updatedAt: undefined,
+  },
+];
+
+const loadDummyData = () => {
+  return dummyData;
 };
 
-// {
-//     _id: ,
-//     title: ,
-//     description: ,
-//     children: ,
-//     scheduledDate: ,
-//     deadlineDate: ,
-//     isRoot: ,
-//     createdAt: ,
-//     updatedAt: ,
-// }
+const loadDummyNode = (listNodeId: string) => {
+  // TODO find from state instead
+  const listNode = dummyData.find((node) => node._id === listNodeId);
+  return flattenNode(listNode!);
+};
+
+const flattenNode = (parentNode: INode) => {
+  let result: INode[] = [parentNode];
+  parentNode.children.forEach((child) => {
+    result = result.concat(flattenNode(child));
+  });
+  return result;
+};
+
+const flattenNodeId = (parentNode: INode) => {
+  let result: string[] = [parentNode._id];
+  parentNode.children.forEach((child) => {
+    result = result.concat(flattenNodeId(child));
+  });
+  return result;
+};
+
+const nodesAdapter = createEntityAdapter<INode>({
+  selectId: (node) => node._id,
+});
 
 export const nodeSlice = createSlice({
   name: "node",
-  initialState,
+  initialState: nodesAdapter.getInitialState(),
   reducers: {
-    listNodes: (state) => {
-      return state;
+    fetchListNodes: (state) => {
+      const payload = loadDummyData();
+      nodesAdapter.addMany(state, payload);
     },
-    addNode: (state) => {
-      state.value.push(dummyChild("8"));
+    fetchNodes: (state, action: PayloadAction<{ id: string }>) => {
+      const payload = loadDummyNode(action.payload.id);
+      nodesAdapter.addMany(state, payload);
+    },
+    addNode: (
+      state,
+      action: PayloadAction<{ parentId: string; node: INode }>
+    ) => {
+      // state.value.push(dummyChild("8"));
     },
     editListTitle: (
       state,
-      action: PayloadAction<{ _id: string; title: string }>
-    ) => {
-      state.value.forEach((node) => {
-        if (node._id === action.payload._id) {
-          node.title = action.payload.title;
-        }
-      });
-    },
+      action: PayloadAction<{ id: string; title: string }>
+    ) => {},
     editListDescription: (
       state,
-      action: PayloadAction<{ _id: string; desc: string }>
-    ) => {
-      state.value.forEach((node) => {
-        if (node._id === action.payload._id) {
-          node.description = action.payload.desc;
-        }
-      });
-    },
+      action: PayloadAction<{ id: string; desc: string }>
+    ) => {},
     editListScheduledDate: (
       state,
-      action: PayloadAction<{ _id: string; date: Date }>
-    ) => {
-      state.value.forEach((node) => {
-        if (node._id === action.payload._id) {
-          node.scheduledDate = action.payload.date;
-        }
-      });
-    },
+      action: PayloadAction<{ id: string; date: Date }>
+    ) => {},
     editListDeadlineDate: (
       state,
-      action: PayloadAction<{ _id: string; date: Date }>
-    ) => {
-      state.value.forEach((node) => {
-        if (node._id === action.payload._id) {
-          node.deadlineDate = action.payload.date;
+      action: PayloadAction<{ id: string; date: Date }>
+    ) => {},
+    deleteList: (state, action: PayloadAction<{ id: string }>) => {
+      const rootNode = state.entities[action.payload.id];
+      try {
+        // send delete request, then refetch parent node
+        const parentId = state.entities[action.payload.id]?.parentId;
+        if (parentId) {
+          state.entities[parentId] = {
+            ...state.entities[parentId]!,
+            children: state.entities[parentId]!.children.filter(
+              (child) => child._id !== action.payload.id
+            ),
+          };
+        } else {
+          // is a list node
         }
-      });
-    },
-    deleteList: (state, action: PayloadAction<string>) => {
-      // update siblings
-      state.value = state.value.filter((list) => list._id !== action.payload);
+        const idArr = flattenNodeId(rootNode!);
+        nodesAdapter.removeMany(state, idArr);
+      } catch (e) {}
     },
     refileList: () => {},
   },
 });
 
+export const nodesSelectors = nodesAdapter.getSelectors<RootState>(
+  (state) => state.nodes
+);
+
 export const {
-  listNodes,
+  fetchListNodes,
+  fetchNodes,
   addNode,
   editListTitle,
   editListDescription,

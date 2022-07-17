@@ -1,9 +1,4 @@
-import React, {
-  KeyboardEventHandler,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Collapse } from "react-collapse";
 import DatePicker from "react-datepicker";
@@ -15,7 +10,7 @@ import {
   ArrowDropUp,
   DeleteForever,
 } from "@mui/icons-material";
-import { INode, setEditState } from "../../features";
+import { fetchNodes, INode, setEditState } from "../../features";
 import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListItem.scss";
@@ -28,28 +23,24 @@ import {
   EditStates,
 } from "../../features";
 import { CustomDatePicker } from "../";
-import { useHotkeys, Options } from "react-hotkeys-hook";
-import NodeItem from "../NodeItem/NodeItem";
 import { RootState } from "../../app/store";
+import { useNavigate } from "react-router-dom";
 
 interface props {
   node: INode;
-  isSelected: boolean;
 }
 
 function ListItem(props: props) {
   const dispatch = useDispatch();
+  let navigate = useNavigate();
   const editState = useSelector((state: RootState) => state.global.editState);
   const { _id, title, deadlineDate, scheduledDate, description } = props.node;
-  const { isSelected } = props;
 
-  const titleRef = useRef<HTMLInputElement>(null);
   const descRef = useRef<HTMLTextAreaElement>(null);
   const scheduleRef = useRef<DatePicker<never, undefined>>(null);
   const deadlineRef = useRef<DatePicker<never, undefined>>(null);
 
   const [isOpened, setIsOpened] = useState<boolean>(false);
-  const [titleState, setTitleState] = useState<string>(title);
   const [descState, setDescState] = useState<string>(description ?? "");
   const [descHeight, setDescHeight] = useState<number>(
     descRef.current?.scrollHeight ?? 48
@@ -61,111 +52,41 @@ function ListItem(props: props) {
     deadlineDate
   );
 
-  const hotkeyOptions: Options = {
-    filter: (_) =>
-      isSelected &&
-      editState !== EditStates.Schedule &&
-      editState !== EditStates.Deadline,
-    filterPreventDefault: false,
-    keydown: true,
+  const saveTitle = (id: string, title: string) => {
+    dispatch(editListTitle({ id, title }));
   };
 
-  useHotkeys(
-    "tab",
-    () => {
-      setIsOpened((prev) => !prev);
-    },
-    hotkeyOptions
-  );
-
-  useHotkeys(
-    "i",
-    () => {
-      dispatch(setEditState({ editState: EditStates.Title }));
-      titleRef.current?.focus();
-    },
-    { ...hotkeyOptions, keyup: true, keydown: false }
-  );
-
-  useHotkeys(
-    "shift + i",
-    () => {
-      dispatch(setEditState({ editState: EditStates.Desc }));
-      setIsOpened(true);
-      descRef.current?.focus();
-    },
-    { ...hotkeyOptions, keyup: true, keydown: false }
-  );
-
-  useHotkeys(
-    "Delete",
-    () => {
-      removeList(_id);
-    },
-    hotkeyOptions
-  );
-
-  useHotkeys(
-    "s",
-    () => {
-      dispatch(setEditState({ editState: EditStates.Schedule }));
-      setIsOpened(true);
-      scheduleRef.current?.setFocus();
-    },
-    { ...hotkeyOptions, keyup: true, keydown: false }
-  );
-
-  useHotkeys(
-    "d",
-    () => {
-      dispatch(setEditState({ editState: EditStates.Deadline }));
-      setIsOpened(true);
-      deadlineRef.current?.setFocus();
-    },
-    { ...hotkeyOptions, keyup: true, keydown: false }
-  );
-
-  const saveTitle = (_id: string, title: string) => {
-    dispatch(editListTitle({ _id, title }));
+  const saveDescription = (id: string, desc: string) => {
+    dispatch(editListDescription({ id, desc }));
   };
 
-  const saveDescription = (_id: string, desc: string) => {
-    dispatch(editListDescription({ _id, desc }));
+  const removeList = (id: string) => {
+    dispatch(deleteList({ id }));
   };
 
-  const removeList = (_id: string) => {
-    dispatch(deleteList(_id));
+  const saveListSchedule = (id: string, date: Date) => {
+    dispatch(editListScheduledDate({ id, date }));
   };
 
-  const saveListSchedule = (_id: string, date: Date) => {
-    dispatch(editListScheduledDate({ _id, date }));
-  };
-
-  const saveListDeadline = (_id: string, date: Date) => {
-    dispatch(editListDeadlineDate({ _id, date }));
+  const saveListDeadline = (id: string, date: Date) => {
+    dispatch(editListDeadlineDate({ id, date }));
   };
 
   return (
-    <div className={`px-3 py-3 ${isSelected ? "bg-gray-800/75" : ""}`}>
+    <div className={"px-3 py-3"}>
       <div className="flex justify-between">
         <div className="text-doom-green text-2xl flex-grow">
           <button className="mr-2" onClick={() => setIsOpened((prev) => !prev)}>
             {isOpened ? <ArrowDropUp /> : <ArrowDropDown />}
           </button>
-          <input
-            ref={titleRef}
-            type="text"
-            className="focus:outline-none inline-block flex-grow bg-inherit"
-            value={titleState}
-            onChange={(e) => setTitleState(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
-                saveTitle(_id, titleRef!.current!.value);
-                titleRef.current?.blur();
-              }
-              dispatch(setEditState({ editState: EditStates.None }));
+          <button
+            onClick={() => {
+              dispatch(fetchNodes({ id: _id }));
+              navigate(`/node/${_id}`);
             }}
-          />
+          >
+            {title}
+          </button>
         </div>
         <div className="ml-2">
           <button
@@ -203,15 +124,15 @@ function ListItem(props: props) {
                 elementRef={scheduleRef}
                 selectedDate={selectedScheDate!}
                 setSelectedDate={setSelectedScheDate}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    scheduleRef.current?.setBlur();
-                  }
-                  if (e.key === "Enter") {
-                    saveListSchedule(_id, selectedScheDate!);
-                    scheduleRef.current?.setBlur();
-                  }
-                }}
+                // onKeyDown={(e) => {
+                //   if (e.key === "Escape") {
+                //     scheduleRef.current?.setBlur();
+                //   }
+                //   if (e.key === "Enter") {
+                //     saveListSchedule(_id, selectedScheDate!);
+                //     scheduleRef.current?.setBlur();
+                //   }
+                // }}
                 onCalendarOpen={() => {
                   logging.info("Calendar opened");
                 }}
@@ -226,15 +147,6 @@ function ListItem(props: props) {
               elementRef={deadlineRef}
               selectedDate={selectedDeadDate!}
               setSelectedDate={setSelectedDeadDate}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  deadlineRef.current?.setBlur();
-                }
-                if (e.key === "Enter") {
-                  saveListDeadline(_id, selectedDeadDate!);
-                  deadlineRef.current?.setBlur();
-                }
-              }}
               onCalendarOpen={() => {
                 logging.info("Calendar opened");
               }}
@@ -258,13 +170,6 @@ function ListItem(props: props) {
                 e.currentTarget.value.length,
                 e.currentTarget.value.length
               );
-            }}
-            onKeyDown={(e) => {
-              if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
-                saveDescription(_id, descRef!.current!.value);
-                descRef.current?.blur();
-              }
-              dispatch(setEditState({ editState: EditStates.None }));
             }}
           />
         </Collapse>
