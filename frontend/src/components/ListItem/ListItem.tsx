@@ -9,6 +9,7 @@ import {
   ArrowDropDown,
   ArrowDropUp,
   DeleteForever,
+  Edit,
 } from "@mui/icons-material";
 import { fetchNodes, INode, setEditState } from "../../features";
 import logging from "../../config/logging";
@@ -82,6 +83,7 @@ function ListItem(props: props) {
           <button
             onClick={() => {
               dispatch(fetchNodes({ id: _id }));
+              logging.info("navigate to node");
               navigate(`/node/${_id}`);
             }}
           >
@@ -89,6 +91,9 @@ function ListItem(props: props) {
           </button>
         </div>
         <div className="ml-2">
+          {/* <button>
+            <Edit className="text-doom-green mx-1"></Edit>
+          </button> */}
           <button
             onClick={() => {
               dispatch(setEditState({ editState: EditStates.Schedule }));
@@ -96,8 +101,8 @@ function ListItem(props: props) {
               scheduleRef.current?.setFocus();
             }}
           >
-            <Schedule className="text-doom-green mx-1" />{" "}
-          </button>{" "}
+            <Schedule className="text-doom-green mx-1" />
+          </button>
           <button
             onClick={() => {
               dispatch(setEditState({ editState: EditStates.Deadline }));
@@ -138,6 +143,7 @@ function ListItem(props: props) {
                 }}
                 onCalendarClose={() => {
                   logging.info("Calendar closed");
+                  saveListSchedule(_id, selectedScheDate!);
                   dispatch(setEditState({ editState: EditStates.None }));
                 }}
               />
@@ -152,6 +158,7 @@ function ListItem(props: props) {
               }}
               onCalendarClose={() => {
                 logging.info("Calendar closed");
+                saveListDeadline(_id, selectedDeadDate!);
                 dispatch(setEditState({ editState: EditStates.None }));
               }}
             />

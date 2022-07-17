@@ -76,6 +76,7 @@ const loadDummyNode = (listNodeId: string) => {
 
 const flattenNode = (parentNode: INode) => {
   let result: INode[] = [parentNode];
+  logging.info(parentNode);
   parentNode.children.forEach((child) => {
     result = result.concat(flattenNode(child));
   });
@@ -96,52 +97,90 @@ const nodesAdapter = createEntityAdapter<INode>({
 
 export const nodeSlice = createSlice({
   name: "node",
-  initialState: nodesAdapter.getInitialState(),
+  initialState: nodesAdapter.getInitialState({ value: dummyData }),
   reducers: {
     fetchListNodes: (state) => {
-      const payload = loadDummyData();
-      nodesAdapter.addMany(state, payload);
+      // const payload = loadDummyData();
+      // nodesAdapter.addMany(state, payload);
     },
     fetchNodes: (state, action: PayloadAction<{ id: string }>) => {
-      const payload = loadDummyNode(action.payload.id);
-      nodesAdapter.addMany(state, payload);
+      // const payload = loadDummyNode(action.payload.id);
+      // nodesAdapter.addMany(state, payload);
+      const listNode = state.entities[action.payload.id];
+      nodesAdapter.addMany(state, flattenNode(listNode!));
     },
     addNode: (
       state,
-      action: PayloadAction<{ parentId: string; node: INode }>
+      action: PayloadAction<{ parentId?: string; node: INode }>
     ) => {
-      // state.value.push(dummyChild("8"));
+      if (action.payload.parentId) {
+        // not adding a list node
+        state.entities[action.payload.parentId]?.children.push(
+          action.payload.node
+        );
+      }
+      nodesAdapter.addOne(state, action.payload.node);
     },
     editListTitle: (
       state,
       action: PayloadAction<{ id: string; title: string }>
-    ) => {},
+    ) => {
+      nodesAdapter.updateOne(state, {
+        id: action.payload.id,
+        changes: {
+          title: action.payload.title,
+        },
+      });
+    },
     editListDescription: (
       state,
       action: PayloadAction<{ id: string; desc: string }>
-    ) => {},
+    ) => {
+      nodesAdapter.updateOne(state, {
+        id: action.payload.id,
+        changes: {
+          description: action.payload.desc,
+        },
+      });
+    },
     editListScheduledDate: (
       state,
       action: PayloadAction<{ id: string; date: Date }>
-    ) => {},
+    ) => {
+      logging.info("edit schedule");
+      nodesAdapter.updateOne(state, {
+        id: action.payload.id,
+        changes: {
+          scheduledDate: action.payload.date,
+        },
+      });
+    },
     editListDeadlineDate: (
       state,
       action: PayloadAction<{ id: string; date: Date }>
-    ) => {},
+    ) => {
+      nodesAdapter.updateOne(state, {
+        id: action.payload.id,
+        changes: {
+          deadlineDate: action.payload.date,
+        },
+      });
+    },
     deleteList: (state, action: PayloadAction<{ id: string }>) => {
       const rootNode = state.entities[action.payload.id];
       try {
         // send delete request, then refetch parent node
         const parentId = state.entities[action.payload.id]?.parentId;
         if (parentId) {
-          state.entities[parentId] = {
-            ...state.entities[parentId]!,
-            children: state.entities[parentId]!.children.filter(
-              (child) => child._id !== action.payload.id
-            ),
-          };
-        } else {
-          // is a list node
+          // not deleting a list node
+          nodesAdapter.updateOne(state, {
+            id: parentId,
+            changes: {
+              children: state.entities[parentId]!.children.filter(
+                (child) => child._id !== action.payload.id
+              ),
+            },
+          });
         }
         const idArr = flattenNodeId(rootNode!);
         nodesAdapter.removeMany(state, idArr);

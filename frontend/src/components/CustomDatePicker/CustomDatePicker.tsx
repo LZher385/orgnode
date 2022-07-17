@@ -18,6 +18,7 @@ const CustomDatePicker = (props: Props) => {
     elementRef,
     selectedDate,
     setSelectedDate,
+    // onKeyDown,
     onCalendarOpen,
     onCalendarClose,
   } = props;
@@ -31,6 +32,7 @@ const CustomDatePicker = (props: Props) => {
         setSelectedDate(date!);
         logging.info("On change");
       }}
+      // onKeyDown={onKeyDown}
       // showTimeSelect
       minDate={new Date()}
       onCalendarOpen={onCalendarOpen}

@@ -9,7 +9,6 @@ import {
   ArrowDropDown,
   ArrowDropUp,
   DeleteForever,
-  PlusOne,
   Add,
 } from "@mui/icons-material";
 import { EditStates, INode, nodesSelectors } from "../../features";
@@ -34,8 +33,6 @@ function NodeItem(props: props) {
   const node = useSelector((state: RootState) =>
     nodesSelectors.selectById(state, props.id)
   );
-  // console.log(props.id);
-  // console.log(node);
 
   const { _id, title, deadlineDate, scheduledDate, description, children } =
     node!;
@@ -127,11 +124,21 @@ function NodeItem(props: props) {
                 elementRef={scheduleRef}
                 selectedDate={selectedScheDate!}
                 setSelectedDate={setSelectedScheDate}
+                // onKeyDown={(e) => {
+                //   if (e.key === "Escape") {
+                //     scheduleRef.current?.setBlur();
+                //   }
+                //   if (e.key === "Enter") {
+                //     saveListSchedule(_id, selectedScheDate!);
+                //     scheduleRef.current?.setBlur();
+                //   }
+                // }}
                 onCalendarOpen={() => {
                   logging.info("Calendar opened");
                 }}
                 onCalendarClose={() => {
                   logging.info("Calendar closed");
+                  saveListSchedule(_id, selectedScheDate!);
                 }}
               />
             </div>
@@ -145,6 +152,7 @@ function NodeItem(props: props) {
               }}
               onCalendarClose={() => {
                 logging.info("Calendar closed");
+                saveListDeadline(_id, selectedDeadDate!);
               }}
             />
           </div>
