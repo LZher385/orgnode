@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { v4 as uuidv4 } from "uuid";
 import { Collapse } from "react-collapse";
 import DatePicker from "react-datepicker";
 import {
@@ -11,15 +12,15 @@ import {
   DeleteForever,
   Add,
 } from "@mui/icons-material";
-import { EditStates, INode, nodesSelectors } from "../../features";
+import { addNode, EditStates, INode, nodesSelectors } from "../../features";
 import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
 import {
-  editListTitle,
-  editListDescription,
-  editListScheduledDate,
-  editListDeadlineDate,
-  deleteList,
+  editNodeTitle,
+  editNodeDescription,
+  editNodeScheduleDate,
+  editNodeDeadlineDate,
+  deleteNode,
 } from "../../features";
 import { CustomDatePicker } from "../";
 import { RootState } from "../../app/store";
@@ -55,23 +56,23 @@ function NodeItem(props: props) {
   );
 
   const saveTitle = (id: string, title: string) => {
-    dispatch(editListTitle({ id, title }));
+    dispatch(editNodeTitle({ id, title }));
   };
 
   const saveDescription = (id: string, desc: string) => {
-    dispatch(editListDescription({ id, desc }));
+    dispatch(editNodeDescription({ id, desc }));
   };
 
   const removeList = (id: string) => {
-    dispatch(deleteList({ id }));
+    dispatch(deleteNode({ id }));
   };
 
   const saveListSchedule = (id: string, date: Date) => {
-    dispatch(editListScheduledDate({ id, date }));
+    dispatch(editNodeScheduleDate({ id, date }));
   };
 
   const saveListDeadline = (id: string, date: Date) => {
-    dispatch(editListDeadlineDate({ id, date }));
+    dispatch(editNodeDeadlineDate({ id, date }));
   };
 
   return (
@@ -90,7 +91,23 @@ function NodeItem(props: props) {
           />
         </div>
         <div className="ml-2">
-          <button>
+          <button
+            onClick={() => {
+              dispatch(
+                addNode({
+                  parentId: props.id,
+                  node: {
+                    _id: uuidv4(),
+                    parentId: props.id,
+                    isRoot: true,
+                    title: "New Node",
+                    children: [],
+                  },
+                })
+              );
+              setIsOpened(true);
+            }}
+          >
             <Add className="text-doom-green mx-1" />
           </button>
           <button
@@ -172,7 +189,7 @@ function NodeItem(props: props) {
               );
             }}
             onKeyDown={(e) => {
-              if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
+              if (e.key === "Enter" || e.key === "Escape") {
                 saveDescription(_id, descRef!.current!.value);
                 descRef.current?.blur();
               }

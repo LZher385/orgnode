@@ -16,11 +16,11 @@ import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListItem.scss";
 import {
-  editListTitle,
-  editListDescription,
-  editListScheduledDate,
-  editListDeadlineDate,
-  deleteList,
+  editNodeTitle,
+  editNodeDescription,
+  editNodeScheduleDate,
+  editNodeDeadlineDate,
+  deleteNode,
   EditStates,
 } from "../../features";
 import { CustomDatePicker } from "../";
@@ -54,23 +54,23 @@ function ListItem(props: props) {
   );
 
   const saveListTitle = (id: string, title: string) => {
-    dispatch(editListTitle({ id, title }));
+    dispatch(editNodeTitle({ id, title }));
   };
 
   const saveListDescription = (id: string, desc: string) => {
-    dispatch(editListDescription({ id, desc }));
+    dispatch(editNodeDescription({ id, desc }));
   };
 
   const removeList = (id: string) => {
-    dispatch(deleteList({ id }));
+    dispatch(deleteNode({ id }));
   };
 
   const saveListSchedule = (id: string, date: Date) => {
-    dispatch(editListScheduledDate({ id, date }));
+    dispatch(editNodeScheduleDate({ id, date }));
   };
 
   const saveListDeadline = (id: string, date: Date) => {
-    dispatch(editListDeadlineDate({ id, date }));
+    dispatch(editNodeDeadlineDate({ id, date }));
   };
 
   return (
@@ -144,7 +144,6 @@ function ListItem(props: props) {
                 onCalendarClose={() => {
                   logging.info("Calendar closed");
                   saveListSchedule(_id, selectedScheDate!);
-                  dispatch(setEditState({ editState: EditStates.None }));
                 }}
               />
             </div>

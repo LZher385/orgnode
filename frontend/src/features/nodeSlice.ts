@@ -1,4 +1,3 @@
-import { ConstructionOutlined } from "@mui/icons-material";
 import {
   createSlice,
   PayloadAction,
@@ -121,7 +120,7 @@ export const nodeSlice = createSlice({
       }
       nodesAdapter.addOne(state, action.payload.node);
     },
-    editListTitle: (
+    editNodeTitle: (
       state,
       action: PayloadAction<{ id: string; title: string }>
     ) => {
@@ -132,7 +131,7 @@ export const nodeSlice = createSlice({
         },
       });
     },
-    editListDescription: (
+    editNodeDescription: (
       state,
       action: PayloadAction<{ id: string; desc: string }>
     ) => {
@@ -143,7 +142,7 @@ export const nodeSlice = createSlice({
         },
       });
     },
-    editListScheduledDate: (
+    editNodeScheduleDate: (
       state,
       action: PayloadAction<{ id: string; date: Date }>
     ) => {
@@ -155,7 +154,7 @@ export const nodeSlice = createSlice({
         },
       });
     },
-    editListDeadlineDate: (
+    editNodeDeadlineDate: (
       state,
       action: PayloadAction<{ id: string; date: Date }>
     ) => {
@@ -166,7 +165,7 @@ export const nodeSlice = createSlice({
         },
       });
     },
-    deleteList: (state, action: PayloadAction<{ id: string }>) => {
+    deleteNode: (state, action: PayloadAction<{ id: string }>) => {
       const rootNode = state.entities[action.payload.id];
       try {
         // send delete request, then refetch parent node
@@ -198,11 +197,11 @@ export const {
   fetchListNodes,
   fetchNodes,
   addNode,
-  editListTitle,
-  editListDescription,
-  editListScheduledDate,
-  editListDeadlineDate,
-  deleteList,
+  editNodeTitle,
+  editNodeDescription,
+  editNodeScheduleDate,
+  editNodeDeadlineDate,
+  deleteNode,
 } = nodeSlice.actions;
 
 export default nodeSlice.reducer;

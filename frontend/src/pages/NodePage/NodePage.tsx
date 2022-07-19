@@ -1,11 +1,17 @@
 import React, { useCallback, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../app/store";
 import { NodeItem } from "../../components";
 import logging from "../../config/logging";
 import { useParams } from "react-router-dom";
-import { fetchNodes, nodesSelectors } from "../../features";
+import {
+  addNode,
+  editNodeTitle,
+  fetchNodes,
+  nodesSelectors,
+} from "../../features";
 import { Add } from "@mui/icons-material";
 import { fontSize } from "@mui/system";
 
@@ -31,6 +37,10 @@ function NodePage(props: Props) {
 
   const [titleState, setTitleState] = useState<string>(rootNode!.title);
 
+  const saveTitle = (title: string) => {
+    dispatch(editNodeTitle({ id: id!, title }));
+  };
+
   return (
     <div className="h-screen max-w-screen-xl mx-auto">
       <header className="py-6 px-4 flex">
@@ -41,13 +51,30 @@ function NodePage(props: Props) {
           value={titleState}
           onChange={(e) => setTitleState(e.target.value)}
           onKeyDown={(e) => {
-            if ((e.key === "Enter" && e.shiftKey) || e.key === "Escape") {
-              // saveTitle(_id, titleRef!.current!.value);
+            if (e.key === "Enter" || e.key === "Escape") {
               titleRef.current?.blur();
             }
           }}
+          onBlur={(e) => {
+            saveTitle(e.target.value);
+          }}
         />
-        <button>
+        <button
+          onClick={() => {
+            dispatch(
+              addNode({
+                parentId: id,
+                node: {
+                  _id: uuidv4(),
+                  parentId: id,
+                  isRoot: true,
+                  title: "New Node",
+                  children: [],
+                },
+              })
+            );
+          }}
+        >
           <Add className="text-doom-green" style={{ fontSize: "50px" }}></Add>
         </button>
       </header>
