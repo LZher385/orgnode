@@ -16,8 +16,8 @@ import { setEditState, EditStates } from "./globalSlice";
 
 export {
   nodesReducer,
-  fetchListNodes,
   fetchNodes,
+  fetchListNodes,
   nodesSelectors,
   addNode,
   editListTitle,

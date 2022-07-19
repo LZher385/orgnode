@@ -18,9 +18,9 @@ function ListPage(props: Props) {
 
   logging.info(nodes);
 
-  useEffect(() => {
-    dispatch(fetchListNodes());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchListNodes());
+  // }, [dispatch]);
 
   return (
     <div className="h-screen max-w-screen-xl mx-auto">

@@ -53,11 +53,11 @@ function ListItem(props: props) {
     deadlineDate
   );
 
-  const saveTitle = (id: string, title: string) => {
+  const saveListTitle = (id: string, title: string) => {
     dispatch(editListTitle({ id, title }));
   };
 
-  const saveDescription = (id: string, desc: string) => {
+  const saveListDescription = (id: string, desc: string) => {
     dispatch(editListDescription({ id, desc }));
   };
 
@@ -177,6 +177,9 @@ function ListItem(props: props) {
                 e.currentTarget.value.length,
                 e.currentTarget.value.length
               );
+            }}
+            onBlur={(e) => {
+              saveListDescription(_id, e.target.value);
             }}
           />
         </Collapse>

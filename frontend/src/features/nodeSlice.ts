@@ -101,7 +101,7 @@ export const nodeSlice = createSlice({
   reducers: {
     fetchListNodes: (state) => {
       // const payload = loadDummyData();
-      // nodesAdapter.addMany(state, payload);
+      nodesAdapter.addMany(state, state.value);
     },
     fetchNodes: (state, action: PayloadAction<{ id: string }>) => {
       // const payload = loadDummyNode(action.payload.id);
