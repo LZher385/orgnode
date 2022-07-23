@@ -63,7 +63,7 @@ function NodeItem(props: props) {
     dispatch(editNodeDescription({ id, desc }));
   };
 
-  const removeList = (id: string) => {
+  const removeNode = (id: string) => {
     dispatch(deleteNode({ id }));
   };
 
@@ -127,7 +127,7 @@ function NodeItem(props: props) {
           <button>
             <DriveFileMove className="text-doom-green mx-1" />
           </button>
-          <button onClick={() => removeList(_id)}>
+          <button onClick={() => removeNode(_id)}>
             <DeleteForever className="text-doom-green mx-1" />
           </button>
         </div>

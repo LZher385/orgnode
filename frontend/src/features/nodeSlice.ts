@@ -2,6 +2,7 @@ import {
   createSlice,
   PayloadAction,
   createEntityAdapter,
+  EntityState,
 } from "@reduxjs/toolkit";
 import { RootState } from "../app/store";
 import logging from "../config/logging";
@@ -168,26 +169,50 @@ export const nodeSlice = createSlice({
     deleteNode: (state, action: PayloadAction<{ id: string }>) => {
       const rootNode = state.entities[action.payload.id];
       try {
-        // send delete request, then refetch parent node
-        const parentId = state.entities[action.payload.id]?.parentId;
-        if (parentId) {
-          // not deleting a list node
-          nodesAdapter.updateOne(state, {
-            id: parentId,
-            changes: {
-              children: state.entities[parentId]!.children.filter(
-                (child) => child._id !== action.payload.id
-              ),
-            },
-          });
-        }
+        // delete node in the backend
+        removeChildFromParent(state, action.payload.id);
+        // remove all descendants
         const idArr = flattenNodeId(rootNode!);
         nodesAdapter.removeMany(state, idArr);
       } catch (e) {}
     },
-    refileList: () => {},
+    refileToList: (state, action: PayloadAction<{ idToRefile: string }>) => {
+      const nodeId = action.payload.idToRefile;
+      try {
+        removeChildFromParent(state, nodeId);
+        state.entities[nodeId]!.isRoot = true;
+      } catch (e) {}
+    },
+    refileToNode: (
+      state,
+      action: PayloadAction<{ idToRefile: string; newParentId: string }>
+    ) => {
+      const nodeId = action.payload.idToRefile;
+      try {
+        removeChildFromParent(state, nodeId);
+        state.entities[nodeId]!.isRoot = false;
+        state.entities[action.payload.idToRefile]?.children.push(
+          state.entities[nodeId]!
+        );
+      } catch (e) {}
+    },
   },
 });
+
+function removeChildFromParent(state: EntityState<INode>, childId: string) {
+  const parentId = state.entities[childId]?.parentId;
+  if (parentId) {
+    // update children array in parent node
+    nodesAdapter.updateOne(state, {
+      id: parentId,
+      changes: {
+        children: state.entities[parentId]!.children.filter(
+          (child) => child._id !== childId
+        ),
+      },
+    });
+  }
+}
 
 export const nodesSelectors = nodesAdapter.getSelectors<RootState>(
   (state) => state.nodes

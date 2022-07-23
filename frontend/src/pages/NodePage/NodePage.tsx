@@ -27,7 +27,6 @@ export enum EditStates {
 
 function NodePage(props: Props) {
   const dispatch = useDispatch();
-  const editState = useSelector((state: RootState) => state.global.editState);
   const { id } = useParams();
   const rootNode = useSelector((state: RootState) =>
     nodesSelectors.selectById(state, id!)
