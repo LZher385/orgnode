@@ -25,7 +25,7 @@ import {
 } from "../../features";
 import { CustomDatePicker } from "../";
 import { RootState } from "../../app/store";
-import RefileDropdown from "../RefileModal/RefileModal";
+import RefileModal from "../RefileModal/RefileModal";
 
 interface props {
   id: string;
@@ -149,10 +149,10 @@ function NodeItem(props: props) {
             open={isModalOpen}
             onOpen={() => setIsModalOpen(true)}
           >
-            <RefileDropdown
+            <RefileModal
               id={props.id}
               setIsModalOpen={setIsModalOpen}
-            ></RefileDropdown>
+            ></RefileModal>
           </Popup>
           <button onClick={() => removeNode(_id)}>
             <DeleteForever className="text-doom-green mx-1" />
@@ -204,7 +204,7 @@ function NodeItem(props: props) {
           </div>
           <textarea
             ref={descRef}
-            className={`focus:outline-none resize-none w-full text-cyan-50 bg-inherit`}
+            className={`focus:outline-none resize-none w-10/12 text-cyan-50 bg-bg-text mx-3 my-2`}
             style={{ height: descHeight < 200 ? descHeight : 200 }}
             value={descState}
             onChange={(e) => {

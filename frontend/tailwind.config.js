@@ -8,6 +8,7 @@ module.exports = {
         'doom-blue': '#66aae8',
         'doom-green': '#888761',
         'doom-grey': '#8d8989',
+        'bg-text': '#222a38',
       },
     },
   },

@@ -26,6 +26,8 @@ import {
 import { CustomDatePicker } from "../";
 import { RootState } from "../../app/store";
 import { useNavigate } from "react-router-dom";
+import Popup from "reactjs-popup";
+import RefileModal from "../RefileModal/RefileModal";
 
 interface props {
   node: INode;
@@ -42,6 +44,7 @@ function ListItem(props: props) {
   const deadlineRef = useRef<DatePicker<never, undefined>>(null);
 
   const [isOpened, setIsOpened] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [descState, setDescState] = useState<string>(description ?? "");
   const [descHeight, setDescHeight] = useState<number>(
     descRef.current?.scrollHeight ?? 48
@@ -52,10 +55,6 @@ function ListItem(props: props) {
   const [selectedDeadDate, setSelectedDeadDate] = useState<Date | undefined>(
     deadlineDate
   );
-
-  const saveListTitle = (id: string, title: string) => {
-    dispatch(editNodeTitle({ id, title }));
-  };
 
   const saveListDescription = (id: string, desc: string) => {
     dispatch(editNodeDescription({ id, desc }));
@@ -112,9 +111,20 @@ function ListItem(props: props) {
           >
             <HourglassTop className="text-doom-green mx-1" />
           </button>
-          <button>
-            <DriveFileMove className="text-doom-green mx-1" />
-          </button>
+          <Popup
+            modal
+            closeOnEscape
+            trigger={
+              <button>
+                {" "}
+                <DriveFileMove className="text-doom-green mx-1" />
+              </button>
+            }
+            open={isModalOpen}
+            onOpen={() => setIsModalOpen(true)}
+          >
+            <RefileModal id={_id} setIsModalOpen={setIsModalOpen}></RefileModal>
+          </Popup>
           <button onClick={() => removeList(_id)}>
             <DeleteForever className="text-doom-green mx-1" />
           </button>

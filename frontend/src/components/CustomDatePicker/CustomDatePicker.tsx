@@ -24,7 +24,7 @@ const CustomDatePicker = (props: Props) => {
   } = props;
   return (
     <DatePicker
-      className="bg-inherit"
+      className="bg-bg-text"
       ref={elementRef}
       selected={selectedDate}
       dateFormat={"dd MMM yy"}
