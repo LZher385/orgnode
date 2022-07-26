@@ -66,7 +66,7 @@ function NodePage(props: Props) {
                 node: {
                   _id: uuidv4(),
                   parentId: id,
-                  isRoot: true,
+                  isRoot: false,
                   title: "New Node",
                   children: [],
                 },

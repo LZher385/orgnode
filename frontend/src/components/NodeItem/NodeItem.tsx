@@ -12,6 +12,7 @@ import {
   DeleteForever,
   Add,
 } from "@mui/icons-material";
+import Popup from "reactjs-popup";
 import { addNode, EditStates, INode, nodesSelectors } from "../../features";
 import logging from "../../config/logging";
 import "react-datepicker/dist/react-datepicker.css";
@@ -24,6 +25,7 @@ import {
 } from "../../features";
 import { CustomDatePicker } from "../";
 import { RootState } from "../../app/store";
+import RefileDropdown from "../RefileModal/RefileModal";
 
 interface props {
   id: string;
@@ -43,6 +45,7 @@ function NodeItem(props: props) {
   const deadlineRef = useRef<DatePicker<never, undefined>>(null);
 
   const [isOpened, setIsOpened] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [titleState, setTitleState] = useState<string>(title);
   const [descState, setDescState] = useState<string>(description ?? "");
   const [descHeight, setDescHeight] = useState<number>(
@@ -87,7 +90,17 @@ function NodeItem(props: props) {
             type="text"
             className="focus:outline-none inline-block flex-grow bg-inherit"
             value={titleState}
-            onChange={(e) => setTitleState(e.target.value)}
+            onChange={(e) => {
+              setTitleState(e.target.value);
+              saveTitle(_id, e.target.value);
+            }}
+            // onChange={(e) => setTitleState(e.target.value)}
+            // onKeyDown={(e) => {
+            //   if (e.key === "Enter" || e.key === "Escape") {
+            //     saveDescription(_id, titleRef!.current!.value);
+            //     titleRef.current?.blur();
+            //   }
+            // }}
           />
         </div>
         <div className="ml-2">
@@ -99,7 +112,7 @@ function NodeItem(props: props) {
                   node: {
                     _id: uuidv4(),
                     parentId: props.id,
-                    isRoot: true,
+                    isRoot: false,
                     title: "New Node",
                     children: [],
                   },
@@ -124,9 +137,23 @@ function NodeItem(props: props) {
           >
             <HourglassTop className="text-doom-green mx-1" />
           </button>
-          <button>
-            <DriveFileMove className="text-doom-green mx-1" />
-          </button>
+          <Popup
+            modal
+            closeOnEscape
+            trigger={
+              <button>
+                {" "}
+                <DriveFileMove className="text-doom-green mx-1" />
+              </button>
+            }
+            open={isModalOpen}
+            onOpen={() => setIsModalOpen(true)}
+          >
+            <RefileDropdown
+              id={props.id}
+              setIsModalOpen={setIsModalOpen}
+            ></RefileDropdown>
+          </Popup>
           <button onClick={() => removeNode(_id)}>
             <DeleteForever className="text-doom-green mx-1" />
           </button>
@@ -151,6 +178,7 @@ function NodeItem(props: props) {
                 //   }
                 // }}
                 onCalendarOpen={() => {
+                  setIsOpened(true);
                   logging.info("Calendar opened");
                 }}
                 onCalendarClose={() => {
@@ -165,6 +193,7 @@ function NodeItem(props: props) {
               selectedDate={selectedDeadDate!}
               setSelectedDate={setSelectedDeadDate}
               onCalendarOpen={() => {
+                setIsOpened(true);
                 logging.info("Calendar opened");
               }}
               onCalendarClose={() => {
@@ -181,6 +210,7 @@ function NodeItem(props: props) {
             onChange={(e) => {
               setDescState(e.target.value);
               setDescHeight(descRef.current?.scrollHeight!);
+              saveDescription(_id, descRef!.current!.value);
             }}
             onFocus={(e) => {
               e.currentTarget.setSelectionRange(
@@ -188,12 +218,12 @@ function NodeItem(props: props) {
                 e.currentTarget.value.length
               );
             }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === "Escape") {
-                saveDescription(_id, descRef!.current!.value);
-                descRef.current?.blur();
-              }
-            }}
+            // onKeyDown={(e) => {
+            //   if (e.key === "Enter" || e.key === "Escape") {
+            //     saveDescription(_id, descRef!.current!.value);
+            //     descRef.current?.blur();
+            //   }
+            // }}
           />
           {children?.map((child) => (
             <div className="ml-2" key={child._id}>

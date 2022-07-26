@@ -9,6 +9,8 @@ import {
   editNodeScheduleDate,
   editNodeDeadlineDate,
   deleteNode,
+  refileToList,
+  refileToNode,
   INode,
 } from "./nodeSlice";
 import globalReducer from "./globalSlice";
@@ -25,6 +27,8 @@ export {
   editNodeScheduleDate,
   editNodeDeadlineDate,
   deleteNode,
+  refileToList,
+  refileToNode,
   globalReducer,
   setEditState,
   EditStates,

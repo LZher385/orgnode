@@ -187,13 +187,14 @@ export const nodeSlice = createSlice({
       state,
       action: PayloadAction<{ idToRefile: string; newParentId: string }>
     ) => {
-      const nodeId = action.payload.idToRefile;
+      const { idToRefile, newParentId } = action.payload;
+      if (idToRefile === newParentId) {
+        throw "Cannot refile to the same element!";
+      }
       try {
-        removeChildFromParent(state, nodeId);
-        state.entities[nodeId]!.isRoot = false;
-        state.entities[action.payload.idToRefile]?.children.push(
-          state.entities[nodeId]!
-        );
+        removeChildFromParent(state, idToRefile);
+        state.entities[idToRefile]!.isRoot = false;
+        state.entities[newParentId]?.children.push(state.entities[idToRefile]!);
       } catch (e) {}
     },
   },
@@ -227,6 +228,8 @@ export const {
   editNodeScheduleDate,
   editNodeDeadlineDate,
   deleteNode,
+  refileToList,
+  refileToNode,
 } = nodeSlice.actions;
 
 export default nodeSlice.reducer;
