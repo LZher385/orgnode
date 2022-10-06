@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 export default interface INode extends Document {
   title: string;
   description?: string;
-  children?: INode[];
+  childrenIds: string[];
   scheduledDate?: Date;
   deadlineDate?: Date;
   isRoot: boolean;

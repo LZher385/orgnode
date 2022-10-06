@@ -1,3 +1,4 @@
 import Node from "./nodeModel";
+import User from "./userModel";
 
-export { Node };
+export { Node, User };

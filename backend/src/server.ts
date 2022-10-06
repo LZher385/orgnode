@@ -1,22 +1,23 @@
 import express from "express";
 import mongoose from "mongoose";
-// import dotenv from "dotenv";
+import dotenv from "dotenv";
 import http from "http";
 import { logging, config } from "./config";
-import { nodeRoutes } from "./routes";
-import cors from "cors";
+import { authRoutes, nodeRoutes } from "./routes";
+import { errorHandler, notFound } from "./middleware";
 
-// dotenv.config();
+dotenv.config();
 
-const mongoUrl = "mongodb://127.0.0.1:27017/orgnode";
+// const mongoUrl = "mongodb://127.0.0.1:27017/orgnode";
 
 const router = express();
 
 const httpServer = http.createServer(router);
 
+/** MongoDB */
 mongoose
-  .connect(mongoUrl, {})
-  .then((result) => {
+  .connect(process.env.MONGO_URI as string)
+  .then((_result) => {
     logging.info("Mongo Connected");
   })
   .catch((error) => {
@@ -57,15 +58,12 @@ router.use((req, res, next) => {
 
 /** Routes */
 router.use("/nodes", nodeRoutes);
+router.use("/auth", authRoutes);
 
 /** Error handling */
-router.use((req, res, next) => {
-  const error = new Error("Not found");
-
-  res.status(404).json({
-    message: error.message,
-  });
-});
+// If no routes from before match
+router.use(notFound);
+router.use(errorHandler);
 
 httpServer.listen(config.server.port, () =>
   logging.info(`Server is running ${config.server.host}:${config.server.port}`)

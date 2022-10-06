@@ -5,7 +5,6 @@ const NodeSchema: Schema = new Schema(
   {
     title: { type: String },
     description: { type: String },
-    children: { type: [this] },
     scheduledDate: { type: Date },
     deadlineDate: { type: Date },
     isRoot: { type: Boolean },
@@ -14,5 +13,9 @@ const NodeSchema: Schema = new Schema(
     timestamps: true,
   }
 );
+
+NodeSchema.add({
+  children: [NodeSchema],
+});
 
 export default mongoose.model<INode>("Node", NodeSchema);

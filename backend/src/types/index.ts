@@ -1,3 +1,4 @@
 import INode from "./node";
+import IUser from "./user";
 
-export type { INode };
+export type { INode, IUser };

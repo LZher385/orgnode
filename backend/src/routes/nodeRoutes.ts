@@ -1,5 +1,6 @@
 import express from "express";
 import { nodeController } from "../controllers";
+import { body } from "express-validator";
 
 const router = express.Router();
 

@@ -13,7 +13,6 @@ import {
   nodesSelectors,
 } from "../../features";
 import { Add } from "@mui/icons-material";
-import { fontSize } from "@mui/system";
 
 type Props = {};
 
