@@ -3,11 +3,13 @@ import INode from "../types/node";
 
 const NodeSchema: Schema = new Schema(
   {
-    title: { type: String },
+    title: { type: String, required: true },
     description: { type: String },
+    ancestors: [{ type: mongoose.Schema.Types.ObjectId, ref: "Node" }],
+    parent: { type: mongoose.Schema.Types.ObjectId, ref: "Node" },
     scheduledDate: { type: Date },
     deadlineDate: { type: Date },
-    isRoot: { type: Boolean },
+    isRoot: { type: Boolean, required: true },
   },
   {
     timestamps: true,

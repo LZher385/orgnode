@@ -4,13 +4,21 @@ import { Node } from "../models";
 import asyncHandler from "express-async-handler";
 
 const create = asyncHandler(async (req: Request, res: Response) => {
-  const { title, description, children, scheduledDate, deadlineDate, isRoot } =
-    req.body;
+  const {
+    title,
+    description,
+    ancestors,
+    parent,
+    scheduledDate,
+    deadlineDate,
+    isRoot,
+  } = req.body;
 
   const newNode = await Node.create({
     title,
     description,
-    children,
+    ancestors,
+    parent,
     scheduledDate,
     deadlineDate,
     isRoot,
@@ -20,7 +28,8 @@ const create = asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json({
       _id: newNode._id,
       title: newNode.title,
-      childrenIds: newNode.childrenIds,
+      ancestors: newNode.ancestors,
+      parent: newNode.parent,
     });
   } else {
     res.status(400);
@@ -28,7 +37,7 @@ const create = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-const read = asyncHandler(async (req: Request, res: Response) => {
+const get = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const node = await Node.findById(id);
@@ -39,7 +48,8 @@ const read = asyncHandler(async (req: Request, res: Response) => {
       _id: node._id,
       title: node.title,
       description: node.description,
-      childrenIds: node.childrenIds,
+      ancestors: node.ancestors,
+      parent: node.parent,
       scheduledDate: node.scheduledDate,
       deadlineDate: node.deadlineDate,
       isRoot: node.isRoot,
@@ -50,10 +60,10 @@ const read = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-const readAll = asyncHandler(async (req: Request, res: Response) => {
+const getRootNodes = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const nodes = await Node.find();
+  const nodes = await Node.find({ isRoot: true });
 
   if (nodes) {
     logging.info("Read all nodes");
@@ -66,13 +76,58 @@ const readAll = asyncHandler(async (req: Request, res: Response) => {
   }
 });
 
-const update = asyncHandler(async (req: Request, res: Response) => {});
-const deleteNode = asyncHandler(async (req: Request, res: Response) => {});
+const update = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const {
+    title,
+    description,
+    ancestors,
+    parent,
+    scheduledDate,
+    deadlineDate,
+    isRoot,
+  } = req.body;
+
+  const updatedNode = await Node.findByIdAndUpdate(id, {
+    title,
+    description,
+    ancestors,
+    parent,
+    scheduledDate,
+    deadlineDate,
+    isRoot,
+  });
+
+  if (updatedNode) {
+    logging.info("Updated node");
+    res.status(200).json({
+      updatedNode,
+    });
+  } else {
+    res.status(400);
+    throw new Error("Failed to update node");
+  }
+});
+
+const deleteNode = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const deletedNode = await Node.findByIdAndDelete(id);
+
+  if (deletedNode) {
+    logging.info("Deleted node");
+    res.status(200).json({
+      deletedNode,
+    });
+  } else {
+    throw new Error("Failed to delete node");
+  }
+});
 
 export default {
   create,
-  read,
-  readAll,
+  get,
+  getRootNodes,
   update,
   deleteNode,
 };
